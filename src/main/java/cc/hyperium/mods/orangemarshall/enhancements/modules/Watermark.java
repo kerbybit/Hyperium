@@ -28,7 +28,7 @@ public class Watermark
     
     @SubscribeEvent
     public void onTickReset(final TickEvent.ClientTickEvent e) {
-        if (Minecraft.func_71410_x().field_71439_g == null && Watermark.future != null) {
+        if (Minecraft.getMinecraft().thePlayer == null && Watermark.future != null) {
             stop();
         }
         else if (Watermark.future == null) {
@@ -38,13 +38,13 @@ public class Watermark
     
     @SubscribeEvent
     public void drawWatermark(final RenderGameOverlayEvent.Text e) {
-        if (Minecraft.func_71410_x() == null || Minecraft.func_71410_x().field_71439_g == null || Watermark.alpha >= Watermark.multiplier * 255 || Watermark.future == null) {
+        if (Minecraft.getMinecraft() == null || Minecraft.getMinecraft().thePlayer == null || Watermark.alpha >= Watermark.multiplier * 255 || Watermark.future == null) {
             ++Watermark.alpha;
             return;
         }
-        final ScaledResolution res = new ScaledResolution(Minecraft.func_71410_x());
-        final String text = Minecraft.func_71410_x().func_110432_I().func_111285_a().equals("OrangeMarshall") ? "" : "Vanilla Enhancements Mod by OrangeMarshall";
-        Minecraft.func_71410_x().field_71466_p.func_78276_b(text, res.func_78326_a() - Minecraft.func_71410_x().field_71466_p.func_78256_a(text), res.func_78328_b(), 0xFFFFFF | Watermark.alpha / Watermark.multiplier << 24);
+        final ScaledResolution res = new ScaledResolution(Minecraft.getMinecraft());
+        final String text = Minecraft.getMinecraft().getSession().getUsername().equals("OrangeMarshall") ? "" : "Vanilla Enhancements Mod by OrangeMarshall";
+        Minecraft.getMinecraft().fontRendererObj.drawString(text, res.getScaledWidth() - Minecraft.getMinecraft().fontRendererObj.getStringWidth(text), res.getScaledHeight(), 0xFFFFFF | Watermark.alpha / Watermark.multiplier << 24);
         ++Watermark.alpha;
     }
     

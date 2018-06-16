@@ -9,8 +9,8 @@ public class FixedInventory extends GuiInventory
         super(p);
     }
     
-    protected void func_175378_g() {
-        super.func_175378_g();
-        this.field_147003_i = this.field_146294_l - this.field_146999_f >> 1;
+    protected void updateActivePotionEffects() {
+        super.updateActivePotionEffects();
+        this.guiLeft = this.width - this.xSize >> 1;
     }
 }

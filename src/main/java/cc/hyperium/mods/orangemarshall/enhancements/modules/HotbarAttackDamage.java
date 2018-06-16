@@ -16,7 +16,7 @@ public class HotbarAttackDamage
     private Minecraft mc;
     
     public HotbarAttackDamage() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
     
@@ -25,26 +25,26 @@ public class HotbarAttackDamage
         if (e.type != RenderGameOverlayEvent.ElementType.TEXT || !Config.instance().showAttackDamageAboveHotbar) {
             return;
         }
-        final ItemStack heldItemStack = this.mc.field_71439_g.field_71071_by.func_70448_g();
+        final ItemStack heldItemStack = this.mc.thePlayer.inventory.getCurrentItem();
         if (heldItemStack != null) {
             GL11.glPushMatrix();
             GL11.glScalef(0.5f, 0.5f, 0.5f);
             final ScaledResolution res = e.resolution;
             final String attackDamage = this.getAttackDamageString(heldItemStack);
-            int y = res.func_78328_b() - 59;
-            y += (this.mc.field_71442_b.func_78755_b() ? -1 : 14);
-            y = y + this.mc.field_71466_p.field_78288_b << 0;
+            int y = res.getScaledHeight() - 59;
+            y += (this.mc.playerController.shouldDrawHUD() ? -1 : 14);
+            y = y + this.mc.fontRendererObj.FONT_HEIGHT << 0;
             y <<= 1;
-            y += this.mc.field_71466_p.field_78288_b;
-            final int x = res.func_78326_a() - (this.mc.field_71466_p.func_78256_a(attackDamage) >> 1);
-            this.mc.field_71466_p.func_78276_b(attackDamage, x, y, 13421772);
+            y += this.mc.fontRendererObj.FONT_HEIGHT;
+            final int x = res.getScaledWidth() - (this.mc.fontRendererObj.getStringWidth(attackDamage) >> 1);
+            this.mc.fontRendererObj.drawString(attackDamage, x, y, 13421772);
             GL11.glScalef(2.0f, 2.0f, 2.0f);
             GL11.glPopMatrix();
         }
     }
     
     private String getAttackDamageString(final ItemStack stack) {
-        for (final String entry : stack.func_82840_a((EntityPlayer)this.mc.field_71439_g, true)) {
+        for (final String entry : stack.getTooltip((EntityPlayer)this.mc.thePlayer, true)) {
             if (entry.endsWith("Attack Damage")) {
                 return entry.split(" ", 2)[0].substring(2);
             }

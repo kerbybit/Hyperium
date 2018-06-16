@@ -16,19 +16,19 @@ public class CommandTimeZone implements ICommand
         this.aliases.add("timezones");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "timezone";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "timezone";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length == 1) {
             final TimeZone zone = TimeZone.getTimeZone(args[0].toUpperCase());
             final TimeZone current_zone = Calendar.getInstance().getTimeZone();
@@ -56,15 +56,15 @@ public class CommandTimeZone implements ICommand
         }
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

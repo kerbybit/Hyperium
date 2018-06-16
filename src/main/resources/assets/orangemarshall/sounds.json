@@ -1,0 +1,5 @@
+{
+"blood_effect": {"category": "ambient","sounds": [{"name": "blood_effect","stream": false}]},
+"blood_effect2": {"category": "ambient","sounds": [{"name": "blood_effect2","stream": false}]},
+"final_kill": {"category": "ambient","sounds": [{"name": "final_kill","stream": false}]}
+}

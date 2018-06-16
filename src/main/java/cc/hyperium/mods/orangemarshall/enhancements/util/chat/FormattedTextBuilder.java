@@ -21,9 +21,9 @@ public class FormattedTextBuilder
         final CCT cct = CCT.newComponent();
         for (final ColoredEntry entry : this.entries) {
             final CCT append = CCT.newComponent();
-            append.func_150258_a(entry.getText());
+            append.appendText(entry.getText());
             append.format(entry.getFormatting());
-            cct.func_150257_a((IChatComponent)append);
+            cct.appendSibling((IChatComponent)append);
         }
         return cct;
     }

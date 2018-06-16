@@ -33,12 +33,12 @@ public class AsyncScreenshotSaver implements Runnable
         processPixelValues(this.pixelValues, this.width, this.height);
         BufferedImage bufferedimage = null;
         try {
-            if (OpenGlHelper.func_148822_b()) {
-                bufferedimage = new BufferedImage(this.frameBuffer.field_147621_c, this.frameBuffer.field_147618_d, 1);
+            if (OpenGlHelper.isFramebufferEnabled()) {
+                bufferedimage = new BufferedImage(this.frameBuffer.framebufferWidth, this.frameBuffer.framebufferHeight, 1);
                 int k;
-                for (int j = k = this.frameBuffer.field_147620_b - this.frameBuffer.field_147618_d; k < this.frameBuffer.field_147620_b; ++k) {
-                    for (int l = 0; l < this.frameBuffer.field_147621_c; ++l) {
-                        bufferedimage.setRGB(l, k - j, this.pixelValues[k * this.frameBuffer.field_147622_a + l]);
+                for (int j = k = this.frameBuffer.framebufferTextureHeight - this.frameBuffer.framebufferHeight; k < this.frameBuffer.framebufferTextureHeight; ++k) {
+                    for (int l = 0; l < this.frameBuffer.framebufferWidth; ++l) {
+                        bufferedimage.setRGB(l, k - j, this.pixelValues[k * this.frameBuffer.framebufferTextureWidth + l]);
                     }
                 }
             }
@@ -49,8 +49,8 @@ public class AsyncScreenshotSaver implements Runnable
             final File file2 = getTimestampedPNGFileForDirectory(this.screenshotDir);
             ImageIO.write(bufferedimage, "png", file2);
             final IChatComponent ichatcomponent = (IChatComponent)new ChatComponentText(file2.getName());
-            ichatcomponent.func_150256_b().func_150241_a(new ClickEvent(ClickEvent.Action.OPEN_FILE, file2.getAbsolutePath()));
-            ichatcomponent.func_150256_b().func_150228_d(true);
+            ichatcomponent.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file2.getAbsolutePath()));
+            ichatcomponent.getChatStyle().setUnderlined(true);
             ChatUtil.addMessageWithoutTag((IChatComponent)new ChatComponentTranslation("screenshot.success", new Object[] { ichatcomponent }));
         }
         catch (Exception exception) {

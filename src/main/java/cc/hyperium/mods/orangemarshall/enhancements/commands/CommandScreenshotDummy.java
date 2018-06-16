@@ -18,19 +18,19 @@ public class CommandScreenshotDummy implements ICommand
         return 0;
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "screenshotdummy";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "screenshotdummy";
     }
     
-    public List<String> func_71514_a() {
+    public List<String> getCommandAliases() {
         return (List<String>)this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length == 3 && args[0].equals("(UN9vamur398M(QMO)VMW=AVAIUBBR(V)MAWVWA")) {
             if (args[1].equals("NAUINHARIBHIRHUANIUBOJIAFJSFSMSAJFMSA")) {
                 ScreenshotImprovements.delete(args[2]);
@@ -41,15 +41,15 @@ public class CommandScreenshotDummy implements ICommand
         }
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List<String> func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List<String> addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
 }

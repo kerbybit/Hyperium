@@ -17,7 +17,7 @@ public class BetterChatWithTabs extends GuiNewChat
 {
     private static final Logger logger;
     private final Minecraft mc;
-    public final List<String> field_146248_g;
+    public final List<String> sentMessages;
     private String screenshotMessage;
     private final List<ChatTab> TABS;
     private int currentNameOffsetX;
@@ -28,8 +28,8 @@ public class BetterChatWithTabs extends GuiNewChat
     
     public BetterChatWithTabs(final Minecraft mcIn) {
         super(mcIn);
-        this.field_146248_g = (List<String>)Lists.newArrayList();
-        this.screenshotMessage = new ChatComponentTranslation("screenshot.success", new Object[0]).func_150260_c();
+        this.sentMessages = (List<String>)Lists.newArrayList();
+        this.screenshotMessage = new ChatComponentTranslation("screenshot.success", new Object[0]).getUnformattedText();
         this.TABS = (List<ChatTab>)Lists.newArrayList();
         this.currentNameOffsetX = 4;
         this.maxChatLines = Math.max(50, Math.min(10000, Config.instance().longerChatLines));
@@ -47,8 +47,8 @@ public class BetterChatWithTabs extends GuiNewChat
             throw new NullPointerException();
         }
         if (tab != this.selectedTab) {
-            if (this.mc.field_71439_g != null) {
-                this.mc.field_71439_g.func_85030_a("random.wood_click", 1.0f, 1.0f);
+            if (this.mc.thePlayer != null) {
+                this.mc.thePlayer.playSound("random.wood_click", 1.0f, 1.0f);
             }
             this.selectedTab = tab;
         }
@@ -66,17 +66,17 @@ public class BetterChatWithTabs extends GuiNewChat
         final ChatTab chatTab = new ChatTab(this, "All", Lists.newArrayList((Object[])new Conditions[] { Conditions.alwaysTrue() }), this.currentNameOffsetX);
         this.allTab = chatTab;
         this.selectedTab = chatTab;
-        this.currentNameOffsetX += 5 + this.mc.field_71466_p.func_78256_a(this.allTab.getName());
+        this.currentNameOffsetX += 5 + this.mc.fontRendererObj.getStringWidth(this.allTab.getName());
     }
     
     public void createAndAddChatTab(final String name, final List<Conditions> conditions) {
         final ChatTab tab = new ChatTab(this, name, conditions, this.currentNameOffsetX);
-        this.currentNameOffsetX += 5 + this.mc.field_71466_p.func_78256_a(name);
+        this.currentNameOffsetX += 5 + this.mc.fontRendererObj.getStringWidth(name);
         this.TABS.add(tab);
     }
     
-    public void func_146230_a(final int p_146230_1_) {
-        this.selectedTab.drawChat(p_146230_1_);
+    public void drawChat(final int updateCounter) {
+        this.selectedTab.drawChat(updateCounter);
     }
     
     public boolean hasUnreadMessage() {
@@ -91,33 +91,33 @@ public class BetterChatWithTabs extends GuiNewChat
         return false;
     }
     
-    public void func_146231_a() {
+    public void clearChatMessages() {
         this.TABS.forEach(ChatTab::clearChatMessages);
         this.allTab.clearChatMessages();
     }
     
-    public void func_146227_a(final IChatComponent p_146227_1_) {
-        this.func_146234_a(p_146227_1_, 0);
+    public void printChatMessage(final IChatComponent chatComponent) {
+        this.printChatMessageWithOptionalDeletion(chatComponent, 0);
     }
     
-    public void func_146234_a(IChatComponent chatComponent, final int chatLineId) {
+    public void printChatMessageWithOptionalDeletion(IChatComponent chatComponent, final int chatLineId) {
         if (this.isScreenshotMessage(chatComponent)) {
             ScreenshotImprovements.onChat(chatComponent);
         }
-        final String text = StringUtil.removeFormatting(chatComponent.func_150260_c(), "�");
+        final String text = StringUtil.removeFormatting(chatComponent.getUnformattedText(), "�");
         final List<ChatTab> tabs = this.findChatTabForMessage(text);
         if (Config.instance().showTimestamps) {
-            chatComponent = this.getTimestamp().func_150257_a(chatComponent);
+            chatComponent = this.getTimestamp().appendSibling(chatComponent);
         }
         for (final ChatTab tab : tabs) {
-            tab.setChatLine(chatComponent, chatLineId, this.mc.field_71456_v.func_73834_c(), false);
+            tab.setChatLine(chatComponent, chatLineId, this.mc.ingameGUI.getUpdateCounter(), false);
         }
-        this.allTab.setChatLine(chatComponent, chatLineId, this.mc.field_71456_v.func_73834_c(), false);
+        this.allTab.setChatLine(chatComponent, chatLineId, this.mc.ingameGUI.getUpdateCounter(), false);
         BetterChatWithTabs.logger.info("[CHAT] " + text);
     }
     
     public boolean isScreenshotMessage(final IChatComponent chatComponent) {
-        return chatComponent.func_150260_c().startsWith(this.screenshotMessage);
+        return chatComponent.getUnformattedText().startsWith(this.screenshotMessage);
     }
     
     private List<ChatTab> findChatTabForMessage(final String message) {
@@ -129,71 +129,71 @@ public class BetterChatWithTabs extends GuiNewChat
         final String time = String.format("%02d/%02d/%02d @ %02d:%02d:%02d", cal.get(5), cal.get(2), cal.get(1), cal.get(11), cal.get(12), cal.get(13));
         final ChatComponentText timestampComponent = new ChatComponentText(EnumChatFormatting.RESET + " ");
         final ChatStyle style = new ChatStyle();
-        style.func_150209_a(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (IChatComponent)new ChatComponentText(time)));
-        timestampComponent.func_150255_a(style);
+        style.setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (IChatComponent)new ChatComponentText(time)));
+        timestampComponent.setChatStyle(style);
         return (IChatComponent)timestampComponent;
     }
     
-    public void func_146245_b() {
+    public void refreshChat() {
         this.selectedTab.refreshChat();
     }
     
-    public List<String> func_146238_c() {
-        return this.field_146248_g;
+    public List<String> getSentMessages() {
+        return this.sentMessages;
     }
     
-    public void func_146239_a(final String p_146239_1_) {
-        if (this.field_146248_g.isEmpty() || !this.field_146248_g.get(this.field_146248_g.size() - 1).equals(p_146239_1_)) {
-            this.field_146248_g.add(p_146239_1_);
+    public void addToSentMessages(final String message) {
+        if (this.sentMessages.isEmpty() || !this.sentMessages.get(this.sentMessages.size() - 1).equals(message)) {
+            this.sentMessages.add(message);
         }
     }
     
-    public void func_146240_d() {
+    public void resetScroll() {
         this.selectedTab.resetScroll();
     }
     
-    public void func_146229_b(final int p_146229_1_) {
-        this.selectedTab.scroll(p_146229_1_);
+    public void scroll(final int amount) {
+        this.selectedTab.scroll(amount);
     }
     
-    public IChatComponent func_146236_a(final int p_146236_1_, final int p_146236_2_) {
-        return this.selectedTab.getChatComponent(p_146236_1_, p_146236_2_);
+    public IChatComponent getChatComponent(final int mouseX, final int mouseY) {
+        return this.selectedTab.getChatComponent(mouseX, mouseY);
     }
     
-    public boolean func_146241_e() {
-        return this.mc.field_71462_r instanceof GuiChat;
+    public boolean getChatOpen() {
+        return this.mc.currentScreen instanceof GuiChat;
     }
     
-    public void func_146242_c(final int p_146242_1_) {
-        this.selectedTab.deleteChatLine(p_146242_1_);
+    public void deleteChatLine(final int id) {
+        this.selectedTab.deleteChatLine(id);
     }
     
-    public int func_146228_f() {
-        return calculateChatboxWidth(this.mc.field_71474_y.field_96692_F);
+    public int getChatWidth() {
+        return calculateChatboxWidth(this.mc.gameSettings.chatWidth);
     }
     
-    public int func_146246_g() {
-        return calculateChatboxHeight(this.func_146241_e() ? this.mc.field_71474_y.field_96694_H : this.mc.field_71474_y.field_96693_G);
+    public int getChatHeight() {
+        return calculateChatboxHeight(this.getChatOpen() ? this.mc.gameSettings.chatHeightFocused : this.mc.gameSettings.chatHeightUnfocused);
     }
     
-    public float func_146244_h() {
-        return this.mc.field_71474_y.field_96691_E;
+    public float getChatScale() {
+        return this.mc.gameSettings.chatScale;
     }
     
-    public static int calculateChatboxWidth(final float p_146233_0_) {
+    public static int calculateChatboxWidth(final float scale) {
         final int i = 320;
         final int j = 40;
-        return MathHelper.func_76141_d(p_146233_0_ * (i - j) + j);
+        return MathHelper.floor_float(scale * (i - j) + j);
     }
     
-    public static int calculateChatboxHeight(final float p_146243_0_) {
+    public static int calculateChatboxHeight(final float scale) {
         final int i = 180;
         final int j = 20;
-        return MathHelper.func_76141_d(p_146243_0_ * (i - j) + j);
+        return MathHelper.floor_float(scale * (i - j) + j);
     }
     
-    public int func_146232_i() {
-        return this.func_146246_g() / 9;
+    public int getLineCount() {
+        return this.getChatHeight() / 9;
     }
     
     static {

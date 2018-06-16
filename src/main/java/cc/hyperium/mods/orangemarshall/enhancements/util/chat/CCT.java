@@ -20,77 +20,77 @@ public class CCT extends ChatComponentText
     }
     
     public CCT url() {
-        return this.url(this.func_150260_c());
+        return this.url(this.getUnformattedText());
     }
     
     public CCT url(final String url) {
-        this.func_150255_a(this.func_150256_b().func_150241_a(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
-        this.hover((IChatComponent)new CCT("Click to visit ").gray().appendSiblingKeepStyle((IChatComponent)new CCT(this.func_150260_c()).aqua().underline()));
+        this.setChatStyle(this.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url)));
+        this.hover((IChatComponent)new CCT("Click to visit ").gray().appendSiblingKeepStyle((IChatComponent)new CCT(this.getUnformattedText()).aqua().underline()));
         return this;
     }
     
     public CCT bold() {
-        this.func_150255_a(this.func_150256_b().func_150227_a(true));
+        this.setChatStyle(this.getChatStyle().setBold(true));
         return this;
     }
     
     public CCT italic() {
-        this.func_150255_a(this.func_150256_b().func_150217_b(true));
+        this.setChatStyle(this.getChatStyle().setItalic(true));
         return this;
     }
     
     public CCT underline() {
-        this.func_150255_a(this.func_150256_b().func_150228_d(true));
+        this.setChatStyle(this.getChatStyle().setUnderlined(true));
         return this;
     }
     
     public CCT reset() {
-        this.func_150255_a(new ChatStyle());
+        this.setChatStyle(new ChatStyle());
         return this;
     }
     
     public CCT strikethrough() {
-        this.func_150255_a(this.func_150256_b().func_150225_c(true));
+        this.setChatStyle(this.getChatStyle().setStrikethrough(true));
         return this;
     }
     
     public CCT gold() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.GOLD));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.GOLD));
         return this;
     }
     
     public CCT black() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.BLACK));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.BLACK));
         return this;
     }
     
     public CCT dark_blue() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_BLUE));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_BLUE));
         return this;
     }
     
     public CCT dark_green() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_GREEN));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_GREEN));
         return this;
     }
     
     public CCT dark_aqua() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_AQUA));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_AQUA));
         return this;
     }
     
     public CCT dark_red() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_RED));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_RED));
         return this;
     }
     
     public CCT dark_purple() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_PURPLE));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_PURPLE));
         return this;
     }
     
     public CCT gray() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.GRAY));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.GRAY));
         return this;
     }
     
@@ -99,42 +99,42 @@ public class CCT extends ChatComponentText
     }
     
     public CCT dark_gray() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.DARK_GRAY));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.DARK_GRAY));
         return this;
     }
     
     public CCT blue() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.BLUE));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.BLUE));
         return this;
     }
     
     public CCT green() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.GREEN));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.GREEN));
         return this;
     }
     
     public CCT aqua() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.AQUA));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.AQUA));
         return this;
     }
     
     public CCT red() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.RED));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.RED));
         return this;
     }
     
     public CCT light_purple() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.LIGHT_PURPLE));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.LIGHT_PURPLE));
         return this;
     }
     
     public CCT yellow() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.YELLOW));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.YELLOW));
         return this;
     }
     
     public CCT white() {
-        this.func_150255_a(this.func_150256_b().func_150238_a(EnumChatFormatting.WHITE));
+        this.setChatStyle(this.getChatStyle().setColor(EnumChatFormatting.WHITE));
         return this;
     }
     
@@ -177,7 +177,7 @@ public class CCT extends ChatComponentText
                 case LIGHT_PURPLE:
                 case WHITE:
                 case YELLOW: {
-                    this.func_150255_a(this.func_150256_b().func_150238_a(format));
+                    this.setChatStyle(this.getChatStyle().setColor(format));
                     break;
                 }
                 default: {
@@ -189,24 +189,24 @@ public class CCT extends ChatComponentText
     }
     
     public CCT appendSiblingKeepStyle(final IChatComponent ic) {
-        this.field_150264_a.add(ic);
+        this.siblings.add(ic);
         return this;
     }
     
     public CCT print() {
         if (ChatUtil.canSendMessage()) {
-            Minecraft.func_71410_x().field_71439_g.func_145747_a((IChatComponent)this);
+            Minecraft.getMinecraft().thePlayer.addChatMessage((IChatComponent)this);
         }
         return this;
     }
     
     public CCT execute(final String cmd) {
-        this.func_150255_a(this.func_150256_b().func_150241_a(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd.startsWith("/") ? cmd : ("/" + cmd))));
+        this.setChatStyle(this.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd.startsWith("/") ? cmd : ("/" + cmd))));
         return this;
     }
     
     public CCT suggestCommand(final String text) {
-        this.func_150255_a(this.func_150256_b().func_150241_a(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, text)));
+        this.setChatStyle(this.getChatStyle().setChatClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, text)));
         return this;
     }
     
@@ -215,7 +215,7 @@ public class CCT extends ChatComponentText
     }
     
     public CCT hover(final IChatComponent c) {
-        this.func_150255_a(this.func_150256_b().func_150209_a(new HoverEvent(HoverEvent.Action.SHOW_TEXT, c)));
+        this.setChatStyle(this.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, c)));
         return this;
     }
 }

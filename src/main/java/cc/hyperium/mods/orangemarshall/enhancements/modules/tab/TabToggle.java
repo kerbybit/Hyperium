@@ -18,7 +18,7 @@ public class TabToggle
     
     public TabToggle() {
         this.shallRender = false;
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         TabToggle.instance = this;
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
@@ -33,7 +33,7 @@ public class TabToggle
     
     @SubscribeEvent
     public void onKey(final InputEvent.KeyInputEvent event) {
-        if (this.mc.field_71474_y.field_74321_H.func_151468_f()) {
+        if (this.mc.gameSettings.keyBindPlayerList.isPressed()) {
             this.shallRender = !this.shallRender;
         }
     }
@@ -47,18 +47,18 @@ public class TabToggle
             return;
         }
         if (this.shallRender() && this.shallRender) {
-            final ScoreObjective scoreobjective = this.mc.field_71441_e.func_96441_U().func_96539_a(0);
-            final GuiPlayerTabOverlay gui = this.mc.field_71456_v.func_175181_h();
+            final ScoreObjective scoreobjective = this.mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
+            final GuiPlayerTabOverlay gui = this.mc.ingameGUI.getTabList();
             if (gui != null) {
-                final int width = event.resolution.func_78326_a();
-                gui.func_175249_a(width, this.mc.field_71441_e.func_96441_U(), scoreobjective);
+                final int width = event.resolution.getScaledWidth();
+                gui.renderPlayerlist(width, this.mc.theWorld.getScoreboard(), scoreobjective);
             }
         }
     }
     
     private boolean shallRender() {
-        final ScoreObjective scoreobjective = this.mc.field_71441_e.func_96441_U().func_96539_a(0);
-        final NetHandlerPlayClient handler = this.mc.field_71439_g.field_71174_a;
-        return !this.mc.field_71474_y.field_74321_H.func_151470_d() && (!this.mc.func_71387_A() || handler.func_175106_d().size() > 1 || scoreobjective != null) && this.mc.field_71462_r == null;
+        final ScoreObjective scoreobjective = this.mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
+        final NetHandlerPlayClient handler = this.mc.thePlayer.sendQueue;
+        return !this.mc.gameSettings.keyBindPlayerList.isKeyDown() && (!this.mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null) && this.mc.currentScreen == null;
     }
 }

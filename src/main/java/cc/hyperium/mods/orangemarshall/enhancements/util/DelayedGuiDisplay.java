@@ -26,7 +26,7 @@ public class DelayedGuiDisplay
             return;
         }
         if (--this.delayTicks <= 0) {
-            this.mcClient.func_147108_a(this.screen);
+            this.mcClient.displayGuiScreen(this.screen);
             MinecraftForge.EVENT_BUS.unregister((Object)this);
         }
     }

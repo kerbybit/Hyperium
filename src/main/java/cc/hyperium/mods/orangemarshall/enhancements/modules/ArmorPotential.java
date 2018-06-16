@@ -27,7 +27,7 @@ public class ArmorPotential
     }
     
     public ArmorPotential() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         this.config = Config.instance();
         this.lastMessage = "";
         this.cooldown = Cooldown.getNewCooldownMiliseconds(300);
@@ -42,7 +42,7 @@ public class ArmorPotential
             final int color = 16777215;
             final String message = this.getAsString();
             this.lastMessage = message;
-            this.mc.field_71462_r.func_73731_b(this.mc.field_71466_p, message, 10, scaledresolution.func_78328_b() - 16, color);
+            this.mc.currentScreen.drawString(this.mc.fontRendererObj, message, 10, scaledresolution.getScaledHeight() - 16, color);
         }
     }
     
@@ -74,24 +74,24 @@ public class ArmorPotential
     }
     
     private double getArmorPotential(final boolean getProj) {
-        final EntityPlayer player = (EntityPlayer)this.mc.field_71439_g;
+        final EntityPlayer player = (EntityPlayer)this.mc.thePlayer;
         double armor = 0.0;
         int epf = 0;
         int resistance = 0;
-        if (player.func_70644_a(Potion.field_76429_m)) {
-            resistance = player.func_70660_b(Potion.field_76429_m).func_76458_c() + 1;
+        if (player.isPotionActive(Potion.resistance)) {
+            resistance = player.getActivePotionEffect(Potion.resistance).getAmplifier() + 1;
         }
-        for (final ItemStack itemStack : player.field_71071_by.field_70460_b) {
+        for (final ItemStack itemStack : player.inventory.armorInventory) {
             if (itemStack != null) {
-                if (itemStack.func_77973_b() instanceof ItemArmor) {
-                    final ItemArmor armorItem = (ItemArmor)itemStack.func_77973_b();
-                    armor += armorItem.field_77879_b * 0.04;
+                if (itemStack.getItem() instanceof ItemArmor) {
+                    final ItemArmor armorItem = (ItemArmor)itemStack.getItem();
+                    armor += armorItem.damageReduceAmount * 0.04;
                 }
-                if (itemStack.func_77948_v()) {
-                    epf += this.getEffProtPoints(EnchantmentHelper.func_77506_a(0, itemStack), 0.75);
+                if (itemStack.isItemEnchanted()) {
+                    epf += this.getEffProtPoints(EnchantmentHelper.getEnchantmentLevel(0, itemStack), 0.75);
                 }
-                if (getProj && itemStack.func_77948_v()) {
-                    epf += this.getEffProtPoints(EnchantmentHelper.func_77506_a(4, itemStack), 0.75);
+                if (getProj && itemStack.isItemEnchanted()) {
+                    epf += this.getEffProtPoints(EnchantmentHelper.getEnchantmentLevel(4, itemStack), 0.75);
                 }
             }
         }

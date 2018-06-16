@@ -30,20 +30,20 @@ public class ScreenshotImprovements
     private int[] pixelValues;
     
     public ScreenshotImprovements() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         this.cooldown = false;
         this.keybindBetterScreenshot = this.bindScreenshotKey();
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
     
     private KeyBinding bindScreenshotKey() {
-        final KeyBinding[] list = this.mc.field_71474_y.field_74324_K;
-        final KeyBinding target = this.mc.field_71474_y.field_151447_Z;
-        final KeyBinding newKeybind = new KeyBinding(target.func_151464_g(), target.func_151463_i(), target.func_151466_e());
+        final KeyBinding[] list = this.mc.gameSettings.keyBindings;
+        final KeyBinding target = this.mc.gameSettings.keyBindScreenshot;
+        final KeyBinding newKeybind = new KeyBinding(target.getKeyDescription(), target.getKeyCode(), target.getKeyCategory());
         for (int i = 0; i < list.length; ++i) {
-            if (list[i].func_151464_g().equals(target.func_151464_g())) {
+            if (list[i].getKeyDescription().equals(target.getKeyDescription())) {
                 list[i] = newKeybind;
-                target.func_151462_b(-1);
+                target.setKeyCode(-1);
             }
         }
         return newKeybind;
@@ -51,8 +51,8 @@ public class ScreenshotImprovements
     
     @SubscribeEvent
     public void onTick(final TickEvent.ClientTickEvent event) {
-        if (this.mc.field_71462_r != null) {
-            if (this.keybindBetterScreenshot.func_151463_i() > 0 && Keyboard.isKeyDown(this.keybindBetterScreenshot.func_151463_i())) {
+        if (this.mc.currentScreen != null) {
+            if (this.keybindBetterScreenshot.getKeyCode() > 0 && Keyboard.isKeyDown(this.keybindBetterScreenshot.getKeyCode())) {
                 if (!this.cooldown) {
                     this.takeScreenshot();
                     this.cooldown = true;
@@ -66,7 +66,7 @@ public class ScreenshotImprovements
     
     @SubscribeEvent
     public void onKeyInput(final InputEvent.KeyInputEvent e) {
-        if (this.keybindBetterScreenshot.func_151468_f()) {
+        if (this.keybindBetterScreenshot.isPressed()) {
             if (!this.cooldown) {
                 this.takeScreenshot();
                 this.cooldown = true;
@@ -78,22 +78,22 @@ public class ScreenshotImprovements
     }
     
     private void takeScreenshot() {
-        this.saveScreenshot(this.mc.field_71412_D, this.mc.field_71443_c, this.mc.field_71440_d, this.mc.func_147110_a());
+        this.saveScreenshot(this.mc.mcDataDir, this.mc.displayWidth, this.mc.displayHeight, this.mc.getFramebuffer());
     }
     
     public static void onChat(final IChatComponent ic) {
-        final String msg = ic.func_150260_c();
+        final String msg = ic.getUnformattedText();
         final String[] split = msg.split(" ");
         final String filename = split[split.length - 1];
         final CCT copy = CCT.newComponent("[COPY] ");
         copy.green().bold().execute("/screenshotdummy (UN9vamur398M(QMO)VMW=AVAIUBBR(V)MAWVWA agfafafFJSFSMSDASFBfbAssFSAFMSA " + filename).hover("Copy file to clipboard");
         final CCT delete = CCT.newComponent("[DELETE] ");
         delete.red().bold().execute("/screenshotdummy (UN9vamur398M(QMO)VMW=AVAIUBBR(V)MAWVWA NAUINHARIBHIRHUANIUBOJIAFJSFSMSAJFMSA " + filename).hover("Delete file");
-        new DelayedTask(1, () -> ChatUtil.addMessageWithoutTag(copy.func_150257_a((IChatComponent)delete)));
+        new DelayedTask(1, () -> ChatUtil.addMessageWithoutTag(copy.appendSibling((IChatComponent)delete)));
     }
     
     public static void delete(final String filename) {
-        final File f = new File(Minecraft.func_71410_x().field_71412_D, "screenshots\\" + filename);
+        final File f = new File(Minecraft.getMinecraft().mcDataDir, "screenshots\\" + filename);
         if (!f.exists()) {
             ChatUtil.addMessage("Could not find file!");
             return;
@@ -108,7 +108,7 @@ public class ScreenshotImprovements
     }
     
     public static void copy(final String filename) {
-        final File f = new File(Minecraft.func_71410_x().field_71412_D, "screenshots\\" + filename);
+        final File f = new File(Minecraft.getMinecraft().mcDataDir, "screenshots\\" + filename);
         if (!f.exists()) {
             ChatUtil.addMessage("Could not find file!");
             return;
@@ -120,11 +120,11 @@ public class ScreenshotImprovements
     }
     
     public void saveScreenshot(final File gameDirectory, int width, int height, final Framebuffer buffer) {
-        final File file1 = new File(this.mc.field_71412_D, "screenshots");
+        final File file1 = new File(this.mc.mcDataDir, "screenshots");
         file1.mkdir();
-        if (OpenGlHelper.func_148822_b()) {
-            width = buffer.field_147622_a;
-            height = buffer.field_147620_b;
+        if (OpenGlHelper.isFramebufferEnabled()) {
+            width = buffer.framebufferTextureWidth;
+            height = buffer.framebufferTextureHeight;
         }
         final int i = width * height;
         if (this.pixelBuffer == null || this.pixelBuffer.capacity() < i) {
@@ -134,15 +134,15 @@ public class ScreenshotImprovements
         GL11.glPixelStorei(3333, 1);
         GL11.glPixelStorei(3317, 1);
         this.pixelBuffer.clear();
-        if (OpenGlHelper.func_148822_b()) {
-            GlStateManager.func_179144_i(buffer.field_147617_g);
+        if (OpenGlHelper.isFramebufferEnabled()) {
+            GlStateManager.bindTexture(buffer.framebufferTexture);
             GL11.glGetTexImage(3553, 0, 32993, 33639, this.pixelBuffer);
         }
         else {
             GL11.glReadPixels(0, 0, width, height, 32993, 33639, this.pixelBuffer);
         }
         this.pixelBuffer.get(this.pixelValues);
-        new Thread(new AsyncScreenshotSaver(width, height, this.pixelValues, this.mc.func_147110_a(), new File(this.mc.field_71412_D, "screenshots"))).start();
+        new Thread(new AsyncScreenshotSaver(width, height, this.pixelValues, this.mc.getFramebuffer(), new File(this.mc.mcDataDir, "screenshots"))).start();
     }
     
     private static class ImageSelection implements Transferable

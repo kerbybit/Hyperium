@@ -17,7 +17,7 @@ public class DropListener
     public DropListener() {
         this.cooldown = false;
         this.keybind = KeyBindings.createAndRegister("Drop Stack", 22, "key.categories.gameplay");
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
     
@@ -35,12 +35,12 @@ public class DropListener
     }
     
     private boolean shouldActivate() {
-        final int keyCodeStack = this.keybind.func_151463_i();
-        final int keyCodeDrop = this.mc.field_71474_y.field_74316_C.func_151463_i();
+        final int keyCodeStack = this.keybind.getKeyCode();
+        final int keyCodeDrop = this.mc.gameSettings.keyBindDrop.getKeyCode();
         return keyCodeDrop > 0 && keyCodeStack > 0 && Keyboard.isKeyDown(keyCodeDrop) && Keyboard.isKeyDown(keyCodeStack);
     }
     
     private void drop() {
-        this.mc.field_71439_g.func_71040_bB(true);
+        this.mc.thePlayer.dropOneItem(true);
     }
 }

@@ -17,7 +17,7 @@ public class NetworkInfo
     private Minecraft mc;
     
     public NetworkInfo() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register((Object)this);
         NetworkInfo.instance = this;
     }
@@ -28,7 +28,7 @@ public class NetworkInfo
             this.currentServerAddress = null;
         }
         else {
-            this.currentServerAddress = ServerAddress.func_78860_a(this.mc.func_147104_D().field_78845_b);
+            this.currentServerAddress = ServerAddress.fromString(this.mc.getCurrentServerData().serverIP);
         }
     }
     
@@ -46,9 +46,9 @@ public class NetworkInfo
     }
     
     private NetworkPlayerInfo getPlayerInfo(final String ign) {
-        final Collection<NetworkPlayerInfo> map = (Collection<NetworkPlayerInfo>)this.mc.func_147114_u().func_175106_d();
+        final Collection<NetworkPlayerInfo> map = (Collection<NetworkPlayerInfo>)this.mc.getNetHandler().getPlayerInfoMap();
         for (final NetworkPlayerInfo networkplayerinfo : map) {
-            if (networkplayerinfo.func_178845_a().getName().equalsIgnoreCase(ign)) {
+            if (networkplayerinfo.getGameProfile().getName().equalsIgnoreCase(ign)) {
                 return networkplayerinfo;
             }
         }
@@ -60,16 +60,16 @@ public class NetworkInfo
         if (networkInfo == null) {
             return -1;
         }
-        return networkInfo.func_178853_c();
+        return networkInfo.getResponseTime();
     }
     
     public void printPing(final String name) {
         final NetworkPlayerInfo info = this.getPlayerInfo(name);
-        if (info == null || info.func_178853_c() < 0) {
+        if (info == null || info.getResponseTime() < 0) {
             ChatUtil.addMessage(EnumChatFormatting.RED + "No info about " + name);
         }
         else {
-            ChatUtil.addMessage(EnumChatFormatting.WHITE.toString() + EnumChatFormatting.BOLD + info.func_178845_a().getName() + EnumChatFormatting.WHITE + ": " + info.func_178853_c() + "ms");
+            ChatUtil.addMessage(EnumChatFormatting.WHITE.toString() + EnumChatFormatting.BOLD + info.getGameProfile().getName() + EnumChatFormatting.WHITE + ": " + info.getResponseTime() + "ms");
         }
     }
 }

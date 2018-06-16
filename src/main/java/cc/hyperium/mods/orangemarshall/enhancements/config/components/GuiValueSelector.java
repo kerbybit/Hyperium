@@ -46,6 +46,6 @@ public abstract class GuiValueSelector extends Gui
     public abstract void mouseClicked(final int p0, final int p1, final int p2);
     
     static {
-        RENDERER = Minecraft.func_71410_x().field_71466_p;
+        RENDERER = Minecraft.getMinecraft().fontRendererObj;
     }
 }

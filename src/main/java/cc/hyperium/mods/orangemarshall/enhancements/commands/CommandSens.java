@@ -19,19 +19,19 @@ public class CommandSens implements ICommand
         this.aliases.add("sensitivity");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "sens";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "sens <profile:value>";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length > 0) {
             try {
                 int sens = Math.max(Integer.valueOf(args[0]), 0);
@@ -43,8 +43,8 @@ public class CommandSens implements ICommand
                     sens = this.profile[sens].get(Config.instance());
                     sensf = sens / 200.0f;
                 }
-                Minecraft.func_71410_x().field_71474_y.field_74341_c = sensf;
-                Minecraft.func_71410_x().field_71474_y.func_74303_b();
+                Minecraft.getMinecraft().gameSettings.mouseSensitivity = sensf;
+                Minecraft.getMinecraft().gameSettings.saveOptions();
             }
             catch (NumberFormatException e) {
                 ChatUtil.addMessage("Invalid argument!");
@@ -55,15 +55,15 @@ public class CommandSens implements ICommand
         }
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

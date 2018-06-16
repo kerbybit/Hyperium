@@ -20,7 +20,7 @@ public class HotbarEnchantments
     private Minecraft mc;
     
     public HotbarEnchantments() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
     
@@ -29,10 +29,10 @@ public class HotbarEnchantments
         if (e.type != RenderGameOverlayEvent.ElementType.TEXT || !Config.instance().showEnchantsAboveHotbar) {
             return;
         }
-        final ItemStack heldItemStack = this.mc.field_71439_g.field_71071_by.func_70448_g();
+        final ItemStack heldItemStack = this.mc.thePlayer.inventory.getCurrentItem();
         if (heldItemStack != null) {
             String toDraw = "";
-            if (heldItemStack.func_77973_b() instanceof ItemPotion) {
+            if (heldItemStack.getItem() instanceof ItemPotion) {
                 toDraw = this.getPotionEffectString(heldItemStack);
             }
             else {
@@ -41,30 +41,30 @@ public class HotbarEnchantments
             GL11.glPushMatrix();
             GL11.glScalef(0.5f, 0.5f, 0.5f);
             final ScaledResolution res = e.resolution;
-            int y = res.func_78328_b() - 59;
-            y += (this.mc.field_71442_b.func_78755_b() ? -2 : 14);
-            y = y + this.mc.field_71466_p.field_78288_b << 0;
+            int y = res.getScaledHeight() - 59;
+            y += (this.mc.playerController.shouldDrawHUD() ? -2 : 14);
+            y = y + this.mc.fontRendererObj.FONT_HEIGHT << 0;
             y <<= 1;
-            final int x = res.func_78326_a() - (this.mc.field_71466_p.func_78256_a(toDraw) >> 1);
-            this.mc.field_71466_p.func_78276_b(toDraw, x, y, 13421772);
+            final int x = res.getScaledWidth() - (this.mc.fontRendererObj.getStringWidth(toDraw) >> 1);
+            this.mc.fontRendererObj.drawString(toDraw, x, y, 13421772);
             GL11.glScalef(2.0f, 2.0f, 2.0f);
             GL11.glPopMatrix();
         }
     }
     
     private String getPotionEffectString(final ItemStack heldItemStack) {
-        final ItemPotion potion = (ItemPotion)heldItemStack.func_77973_b();
-        final List<PotionEffect> effects = (List<PotionEffect>)potion.func_77832_l(heldItemStack);
+        final ItemPotion potion = (ItemPotion)heldItemStack.getItem();
+        final List<PotionEffect> effects = (List<PotionEffect>)potion.getEffects(heldItemStack);
         if (effects == null) {
             return "";
         }
         final StringBuilder potionBuilder = new StringBuilder();
         for (final PotionEffect entry : effects) {
-            final int duration = entry.func_76459_b() / 20;
+            final int duration = entry.getDuration() / 20;
             potionBuilder.append(EnumChatFormatting.BOLD.toString());
-            potionBuilder.append(StatCollector.func_74838_a(entry.func_76453_d()));
+            potionBuilder.append(StatCollector.translateToLocal(entry.getEffectName()));
             potionBuilder.append(" ");
-            potionBuilder.append(entry.func_76458_c() + 1);
+            potionBuilder.append(entry.getAmplifier() + 1);
             potionBuilder.append(" ");
             potionBuilder.append("(");
             potionBuilder.append(duration / 60 + String.format(":%02d", duration % 60));
@@ -75,7 +75,7 @@ public class HotbarEnchantments
     
     private String getEnchantmentString(final ItemStack heldItemStack) {
         final StringBuilder enchantBuilder = new StringBuilder();
-        final Map<Integer, Integer> en = (Map<Integer, Integer>)EnchantmentHelper.func_82781_a(heldItemStack);
+        final Map<Integer, Integer> en = (Map<Integer, Integer>)EnchantmentHelper.getEnchantments(heldItemStack);
         for (final Map.Entry<Integer, Integer> entry : en.entrySet()) {
             enchantBuilder.append(EnumChatFormatting.BOLD.toString());
             enchantBuilder.append(Maps.ENCHANTMENT_SHORT_NAME.get(entry.getKey()));

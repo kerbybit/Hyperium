@@ -14,7 +14,7 @@ public class ArrowCount
     private Minecraft mc;
     
     public ArrowCount() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
     
@@ -23,31 +23,31 @@ public class ArrowCount
         if (!Config.instance().enableArrowCounter) {
             return;
         }
-        if (this.mc.field_71439_g.func_71045_bC() != null) {
-            final boolean isHoldingBow = this.mc.field_71439_g.func_71045_bC().func_77973_b() instanceof ItemBow;
+        if (this.mc.thePlayer.getCurrentEquippedItem() != null) {
+            final boolean isHoldingBow = this.mc.thePlayer.getCurrentEquippedItem().getItem() instanceof ItemBow;
             final int count = this.getHeldItemCount(isHoldingBow);
             if (count > 1 || (isHoldingBow && count > 0)) {
-                final int offset = (this.mc.field_71442_b.func_178889_l() == WorldSettings.GameType.CREATIVE) ? 10 : 0;
-                this.mc.field_71466_p.func_175065_a(count + "", (float)(e.resolution.func_78326_a() - this.mc.field_71466_p.func_78256_a(count + "") >> 1), (float)(e.resolution.func_78328_b() - 46 - offset), 16777215, true);
+                final int offset = (this.mc.playerController.getCurrentGameType() == WorldSettings.GameType.CREATIVE) ? 10 : 0;
+                this.mc.fontRendererObj.drawString(count + "", (float)(e.resolution.getScaledWidth() - this.mc.fontRendererObj.getStringWidth(count + "") >> 1), (float)(e.resolution.getScaledHeight() - 46 - offset), 16777215, true);
             }
         }
     }
     
     private int getHeldItemCount(final boolean bow) {
-        int id = Item.func_150891_b(this.mc.field_71439_g.func_71045_bC().func_77973_b());
-        int data = this.mc.field_71439_g.func_71045_bC().func_77952_i();
+        int id = Item.getIdFromItem(this.mc.thePlayer.getCurrentEquippedItem().getItem());
+        int data = this.mc.thePlayer.getCurrentEquippedItem().getItemDamage();
         if (bow) {
-            id = Item.func_150891_b(Items.field_151032_g);
+            id = Item.getIdFromItem(Items.arrow);
             data = 0;
         }
         int count = 0;
-        this.mc = Minecraft.func_71410_x();
-        final ItemStack[] inventory = this.mc.field_71439_g.field_71071_by.field_70462_a;
+        this.mc = Minecraft.getMinecraft();
+        final ItemStack[] inventory = this.mc.thePlayer.inventory.mainInventory;
         for (int i = 0; i < inventory.length; ++i) {
             if (inventory[i] != null) {
-                final Item item = inventory[i].func_77973_b();
-                if (Item.func_150891_b(item) == id && inventory[i].func_77952_i() == data) {
-                    count += inventory[i].field_77994_a;
+                final Item item = inventory[i].getItem();
+                if (Item.getIdFromItem(item) == id && inventory[i].getItemDamage() == data) {
+                    count += inventory[i].stackSize;
                 }
             }
         }

@@ -28,10 +28,10 @@ public class ChatInputExtender
     }
     
     private boolean doesServerAllow() {
-        final Minecraft mc = Minecraft.func_71410_x();
-        final NetworkManager netManager = mc.func_147114_u().func_147298_b();
-        final boolean isLocal = netManager.func_150731_c();
-        return isLocal || this.isWhitelisted(mc.func_147104_D().field_78845_b);
+        final Minecraft mc = Minecraft.getMinecraft();
+        final NetworkManager netManager = mc.getNetHandler().getNetworkManager();
+        final boolean isLocal = netManager.isLocalChannel();
+        return isLocal || this.isWhitelisted(mc.getCurrentServerData().serverIP);
     }
     
     private boolean isWhitelisted(final String ip) {
@@ -44,6 +44,6 @@ public class ChatInputExtender
     }
     
     static {
-        defaultText = new FieldWrapper<String>(Enhancements.isObfuscated ? "field_146409_v" : "defaultInputFieldText", GuiChat.class);
+        defaultText = new FieldWrapper<String>(Enhancements.isObfuscated ? "defaultInputFieldText" : "defaultInputFieldText", GuiChat.class);
     }
 }

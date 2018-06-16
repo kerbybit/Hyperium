@@ -18,33 +18,33 @@ public class CommandName implements ICommand
         (this.aliases = new ArrayList()).add("name");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "name";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "name <name>";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length == 1) {
             this.printNames(args[0]);
         }
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return (args.length == 1) ? TabCompletionUtil.getListOfStringsMatchingLastWord(args, TabCompletionUtil.getTabUsernames()) : null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

@@ -27,7 +27,7 @@ public class Ping
     private FieldWrapper<Ordering<NetworkPlayerInfo>> ordering;
     
     public Ping() {
-        this.overlayPlayerList = new FieldWrapper<GuiPlayerTabOverlay>(Enhancements.isObfuscated ? "field_175196_v" : "overlayPlayerList", GuiIngame.class);
+        this.overlayPlayerList = new FieldWrapper<GuiPlayerTabOverlay>(Enhancements.isObfuscated ? "overlayPlayerList" : "overlayPlayerList", GuiIngame.class);
         this.ordering = new FieldWrapper<Ordering<NetworkPlayerInfo>>("field_175252_a", GuiPlayerTabOverlay.class);
         MinecraftForge.EVENT_BUS.register((Object)this);
     }
@@ -45,9 +45,9 @@ public class Ping
             Ping.lastServerIP = "";
         }
         else {
-            final ServerAddress serveraddress = ServerAddress.func_78860_a(Minecraft.func_71410_x().func_147104_D().field_78845_b);
-            Ping.lastServerIP = serveraddress.func_78861_a();
-            Ping.lastServerPort = serveraddress.func_78864_b();
+            final ServerAddress serveraddress = ServerAddress.fromString(Minecraft.getMinecraft().getCurrentServerData().serverIP);
+            Ping.lastServerIP = serveraddress.getIP();
+            Ping.lastServerPort = serveraddress.getPort();
         }
     }
     
@@ -60,23 +60,23 @@ public class Ping
     public void updatePingList(final RenderGameOverlayEvent.Text e) {
         ++Ping.update_counter;
         if (Ping.update_counter > Ping.update_cooldown) {
-            final Minecraft mc = Minecraft.func_71410_x();
-            final ScoreObjective scoreobjective = mc.field_71441_e.func_96441_U().func_96539_a(0);
-            final NetHandlerPlayClient handler = mc.field_71439_g.field_71174_a;
+            final Minecraft mc = Minecraft.getMinecraft();
+            final ScoreObjective scoreobjective = mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
+            final NetHandlerPlayClient handler = mc.thePlayer.sendQueue;
             Ping.playerPings.clear();
             Ping.lastPing = "";
-            if (!mc.func_71387_A() || handler.func_175106_d().size() > 1 || scoreobjective != null) {
-                final NetHandlerPlayClient nethandlerplayclient = mc.field_71439_g.field_71174_a;
-                final GuiPlayerTabOverlay overlayPlayerList = this.overlayPlayerList.get(mc.field_71456_v);
+            if (!mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null) {
+                final NetHandlerPlayClient nethandlerplayclient = mc.thePlayer.sendQueue;
+                final GuiPlayerTabOverlay overlayPlayerList = this.overlayPlayerList.get(mc.ingameGUI);
                 final Ordering<NetworkPlayerInfo> field_175252_a = this.ordering.get(overlayPlayerList);
-                final List<NetworkPlayerInfo> list = (List<NetworkPlayerInfo>)field_175252_a.sortedCopy((Iterable)nethandlerplayclient.func_175106_d());
+                final List<NetworkPlayerInfo> list = (List<NetworkPlayerInfo>)field_175252_a.sortedCopy((Iterable)nethandlerplayclient.getPlayerInfoMap());
                 for (int i = 0; i < list.size(); ++i) {
                     final NetworkPlayerInfo networkplayerinfo1 = list.get(i);
                     if (networkplayerinfo1 != null) {
-                        final String player = networkplayerinfo1.func_178845_a().getName();
-                        final int responseTime = networkplayerinfo1.func_178853_c();
+                        final String player = networkplayerinfo1.getGameProfile().getName();
+                        final int responseTime = networkplayerinfo1.getResponseTime();
                         Ping.playerPings.put(player.toLowerCase(), responseTime);
-                        if (player.equals(Minecraft.func_71410_x().func_110432_I().func_111285_a())) {
+                        if (player.equals(Minecraft.getMinecraft().getSession().getUsername())) {
                             Ping.lastPing = responseTime + "ms";
                         }
                     }
@@ -112,7 +112,7 @@ public class Ping
     }
     
     public static int getPing() {
-        return getPing(Minecraft.func_71410_x().func_110432_I().func_111285_a());
+        return getPing(Minecraft.getMinecraft().getSession().getUsername());
     }
     
     public static int getPing(final String name) {

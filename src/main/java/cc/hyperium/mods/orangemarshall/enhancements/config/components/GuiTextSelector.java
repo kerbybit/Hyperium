@@ -28,7 +28,7 @@ public class GuiTextSelector extends GuiValueSelector
     private int disabledColor;
     private boolean visible;
     private GuiPageButtonList.GuiResponder field_175210_x;
-    private Predicate<String> field_175209_y;
+    private Predicate<String> validator;
     
     public GuiTextSelector(final int componentId, final FontRenderer fontrendererObj, final int x, final int y, final int width, final int height) {
         this.text = "";
@@ -39,7 +39,7 @@ public class GuiTextSelector extends GuiValueSelector
         this.enabledColor = 14737632;
         this.disabledColor = 7368816;
         this.visible = true;
-        this.field_175209_y = (Predicate<String>)Predicates.alwaysTrue();
+        this.validator = (Predicate<String>)Predicates.alwaysTrue();
         this.id = componentId;
         this.fontRendererInstance = fontrendererObj;
         this.xPosition = x;
@@ -57,7 +57,7 @@ public class GuiTextSelector extends GuiValueSelector
     }
     
     public void setText(final String p_146180_1_) {
-        if (this.field_175209_y.apply((Object)p_146180_1_)) {
+        if (this.validator.apply((Object)p_146180_1_)) {
             if (p_146180_1_.length() > this.maxStringLength) {
                 this.text = p_146180_1_.substring(0, this.maxStringLength);
             }
@@ -83,13 +83,13 @@ public class GuiTextSelector extends GuiValueSelector
         return this.text.substring(i, j);
     }
     
-    public void func_175205_a(final Predicate<String> p_175205_1_) {
-        this.field_175209_y = p_175205_1_;
+    public void setValidator(final Predicate<String> theValidator) {
+        this.validator = theValidator;
     }
     
     public void writeText(final String p_146191_1_) {
         String s = "";
-        final String s2 = ChatAllowedCharacters.func_71565_a(p_146191_1_);
+        final String s2 = ChatAllowedCharacters.filterAllowedCharacters(p_146191_1_);
         final int i = (this.cursorPosition < this.selectionEnd) ? this.cursorPosition : this.selectionEnd;
         final int j = (this.cursorPosition < this.selectionEnd) ? this.selectionEnd : this.cursorPosition;
         final int k = this.maxStringLength - this.text.length() - (i - j);
@@ -108,7 +108,7 @@ public class GuiTextSelector extends GuiValueSelector
         if (this.text.length() > 0 && j < this.text.length()) {
             s += this.text.substring(j);
         }
-        if (this.field_175209_y.apply((Object)s)) {
+        if (this.validator.apply((Object)s)) {
             this.text = s;
             this.moveCursorBy(i - this.selectionEnd + l);
             if (this.field_175210_x != null) {
@@ -144,7 +144,7 @@ public class GuiTextSelector extends GuiValueSelector
                 if (j < this.text.length()) {
                     s += this.text.substring(j);
                 }
-                if (this.field_175209_y.apply((Object)s)) {
+                if (this.validator.apply((Object)s)) {
                     this.text = s;
                     if (flag) {
                         this.moveCursorBy(p_146175_1_);
@@ -204,7 +204,7 @@ public class GuiTextSelector extends GuiValueSelector
     public void setCursorPosition(final int p_146190_1_) {
         this.cursorPosition = p_146190_1_;
         final int i = this.text.length();
-        this.setSelectionPos(this.cursorPosition = MathHelper.func_76125_a(this.cursorPosition, 0, i));
+        this.setSelectionPos(this.cursorPosition = MathHelper.clamp_int(this.cursorPosition, 0, i));
     }
     
     public void setCursorPositionZero() {
@@ -219,23 +219,23 @@ public class GuiTextSelector extends GuiValueSelector
         if (!this.isFocused) {
             return false;
         }
-        if (GuiScreen.func_175278_g(p_146201_2_)) {
+        if (GuiScreen.isKeyComboCtrlA(p_146201_2_)) {
             this.setCursorPositionEnd();
             this.setSelectionPos(0);
             return true;
         }
-        if (GuiScreen.func_175280_f(p_146201_2_)) {
-            GuiScreen.func_146275_d(this.getSelectedText());
+        if (GuiScreen.isKeyComboCtrlC(p_146201_2_)) {
+            GuiScreen.setClipboardString(this.getSelectedText());
             return true;
         }
-        if (GuiScreen.func_175279_e(p_146201_2_)) {
+        if (GuiScreen.isKeyComboCtrlV(p_146201_2_)) {
             if (this.isEnabled) {
-                this.writeText(GuiScreen.func_146277_j());
+                this.writeText(GuiScreen.getClipboardString());
             }
             return true;
         }
-        if (GuiScreen.func_175277_d(p_146201_2_)) {
-            GuiScreen.func_146275_d(this.getSelectedText());
+        if (GuiScreen.isKeyComboCtrlX(p_146201_2_)) {
+            GuiScreen.setClipboardString(this.getSelectedText());
             if (this.isEnabled) {
                 this.writeText("");
             }
@@ -243,7 +243,7 @@ public class GuiTextSelector extends GuiValueSelector
         }
         switch (p_146201_2_) {
             case 14: {
-                if (GuiScreen.func_146271_m()) {
+                if (GuiScreen.isCtrlKeyDown()) {
                     if (this.isEnabled) {
                         this.deleteWords(-1);
                     }
@@ -254,7 +254,7 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             case 199: {
-                if (GuiScreen.func_146272_n()) {
+                if (GuiScreen.isShiftKeyDown()) {
                     this.setSelectionPos(0);
                 }
                 else {
@@ -263,15 +263,15 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             case 203: {
-                if (GuiScreen.func_146272_n()) {
-                    if (GuiScreen.func_146271_m()) {
+                if (GuiScreen.isShiftKeyDown()) {
+                    if (GuiScreen.isCtrlKeyDown()) {
                         this.setSelectionPos(this.getNthWordFromPos(-1, this.getSelectionEnd()));
                     }
                     else {
                         this.setSelectionPos(this.getSelectionEnd() - 1);
                     }
                 }
-                else if (GuiScreen.func_146271_m()) {
+                else if (GuiScreen.isCtrlKeyDown()) {
                     this.setCursorPosition(this.getNthWordFromCursor(-1));
                 }
                 else {
@@ -280,15 +280,15 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             case 205: {
-                if (GuiScreen.func_146272_n()) {
-                    if (GuiScreen.func_146271_m()) {
+                if (GuiScreen.isShiftKeyDown()) {
+                    if (GuiScreen.isCtrlKeyDown()) {
                         this.setSelectionPos(this.getNthWordFromPos(1, this.getSelectionEnd()));
                     }
                     else {
                         this.setSelectionPos(this.getSelectionEnd() + 1);
                     }
                 }
-                else if (GuiScreen.func_146271_m()) {
+                else if (GuiScreen.isCtrlKeyDown()) {
                     this.setCursorPosition(this.getNthWordFromCursor(1));
                 }
                 else {
@@ -297,7 +297,7 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             case 207: {
-                if (GuiScreen.func_146272_n()) {
+                if (GuiScreen.isShiftKeyDown()) {
                     this.setSelectionPos(this.text.length());
                 }
                 else {
@@ -306,7 +306,7 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             case 211: {
-                if (GuiScreen.func_146271_m()) {
+                if (GuiScreen.isCtrlKeyDown()) {
                     if (this.isEnabled) {
                         this.deleteWords(1);
                     }
@@ -317,7 +317,7 @@ public class GuiTextSelector extends GuiValueSelector
                 return true;
             }
             default: {
-                if (ChatAllowedCharacters.func_71566_a(p_146201_1_)) {
+                if (ChatAllowedCharacters.isAllowedCharacter(p_146201_1_)) {
                     if (this.isEnabled) {
                         this.writeText(Character.toString(p_146201_1_));
                     }
@@ -339,21 +339,21 @@ public class GuiTextSelector extends GuiValueSelector
             if (this.enableBackgroundDrawing) {
                 i -= 4;
             }
-            final String s = this.fontRendererInstance.func_78269_a(this.text.substring(this.lineScrollOffset), this.getWidth());
-            this.setCursorPosition(this.fontRendererInstance.func_78269_a(s, i).length() + this.lineScrollOffset);
+            final String s = this.fontRendererInstance.trimStringToWidth(this.text.substring(this.lineScrollOffset), this.getWidth());
+            this.setCursorPosition(this.fontRendererInstance.trimStringToWidth(s, i).length() + this.lineScrollOffset);
         }
     }
     
     public void drawTextBox() {
         if (this.getVisible()) {
             if (this.getEnableBackgroundDrawing()) {
-                func_73734_a(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1, this.yPosition + this.height + 1, -6250336);
-                func_73734_a(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, -16777216);
+                drawRect(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1, this.yPosition + this.height + 1, -6250336);
+                drawRect(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, -16777216);
             }
             final int i = this.isEnabled ? this.enabledColor : this.disabledColor;
             final int j = this.cursorPosition - this.lineScrollOffset;
             int k = this.selectionEnd - this.lineScrollOffset;
-            final String s = this.fontRendererInstance.func_78269_a(this.text.substring(this.lineScrollOffset), this.getWidth());
+            final String s = this.fontRendererInstance.trimStringToWidth(this.text.substring(this.lineScrollOffset), this.getWidth());
             final boolean flag = j >= 0 && j <= s.length();
             final boolean flag2 = this.isFocused && this.cursorCounter / 6 % 2 == 0 && flag;
             final int l = this.enableBackgroundDrawing ? (this.xPosition + 4) : this.xPosition;
@@ -364,7 +364,7 @@ public class GuiTextSelector extends GuiValueSelector
             }
             if (s.length() > 0) {
                 final String s2 = flag ? s.substring(0, j) : s;
-                j2 = this.fontRendererInstance.func_175063_a(s2, (float)l, (float)i2, i);
+                j2 = this.fontRendererInstance.drawStringWithShadow(s2, (float)l, (float)i2, i);
             }
             final boolean flag3 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
             int k2 = j2;
@@ -376,19 +376,19 @@ public class GuiTextSelector extends GuiValueSelector
                 --j2;
             }
             if (s.length() > 0 && flag && j < s.length()) {
-                j2 = this.fontRendererInstance.func_175063_a(s.substring(j), (float)j2, (float)i2, i);
+                j2 = this.fontRendererInstance.drawStringWithShadow(s.substring(j), (float)j2, (float)i2, i);
             }
             if (flag2) {
                 if (flag3) {
-                    Gui.func_73734_a(k2, i2 - 1, k2 + 1, i2 + 1 + this.fontRendererInstance.field_78288_b, -3092272);
+                    Gui.drawRect(k2, i2 - 1, k2 + 1, i2 + 1 + this.fontRendererInstance.FONT_HEIGHT, -3092272);
                 }
                 else {
-                    this.fontRendererInstance.func_175063_a("_", (float)k2, (float)i2, i);
+                    this.fontRendererInstance.drawStringWithShadow("_", (float)k2, (float)i2, i);
                 }
             }
             if (k != j) {
-                final int l2 = l + this.fontRendererInstance.func_78256_a(s.substring(0, k));
-                this.drawCursorVertical(k2, i2 - 1, l2 - 1, i2 + 1 + this.fontRendererInstance.field_78288_b);
+                final int l2 = l + this.fontRendererInstance.getStringWidth(s.substring(0, k));
+                this.drawCursorVertical(k2, i2 - 1, l2 - 1, i2 + 1 + this.fontRendererInstance.FONT_HEIGHT);
             }
         }
     }
@@ -410,20 +410,20 @@ public class GuiTextSelector extends GuiValueSelector
         if (p_146188_1_ > this.xPosition + this.width) {
             p_146188_1_ = this.xPosition + this.width;
         }
-        final Tessellator tessellator = Tessellator.func_178181_a();
-        final WorldRenderer worldrenderer = tessellator.func_178180_c();
-        GlStateManager.func_179131_c(0.0f, 0.0f, 255.0f, 255.0f);
-        GlStateManager.func_179090_x();
-        GlStateManager.func_179115_u();
-        GlStateManager.func_179116_f(5387);
-        worldrenderer.func_181668_a(7, DefaultVertexFormats.field_181705_e);
-        worldrenderer.func_181662_b((double)p_146188_1_, (double)p_146188_4_, 0.0).func_181675_d();
-        worldrenderer.func_181662_b((double)p_146188_3_, (double)p_146188_4_, 0.0).func_181675_d();
-        worldrenderer.func_181662_b((double)p_146188_3_, (double)p_146188_2_, 0.0).func_181675_d();
-        worldrenderer.func_181662_b((double)p_146188_1_, (double)p_146188_2_, 0.0).func_181675_d();
-        tessellator.func_78381_a();
-        GlStateManager.func_179134_v();
-        GlStateManager.func_179098_w();
+        final Tessellator tessellator = Tessellator.getInstance();
+        final WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        GlStateManager.color(0.0f, 0.0f, 255.0f, 255.0f);
+        GlStateManager.disableTexture2D();
+        GlStateManager.enableColorLogic();
+        GlStateManager.colorLogicOp(5387);
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION);
+        worldrenderer.pos((double)p_146188_1_, (double)p_146188_4_, 0.0).endVertex();
+        worldrenderer.pos((double)p_146188_3_, (double)p_146188_4_, 0.0).endVertex();
+        worldrenderer.pos((double)p_146188_3_, (double)p_146188_2_, 0.0).endVertex();
+        worldrenderer.pos((double)p_146188_1_, (double)p_146188_2_, 0.0).endVertex();
+        tessellator.draw();
+        GlStateManager.disableColorLogic();
+        GlStateManager.enableTexture2D();
     }
     
     public void setMaxStringLength(final int p_146203_1_) {
@@ -494,10 +494,10 @@ public class GuiTextSelector extends GuiValueSelector
                 this.lineScrollOffset = i;
             }
             final int j = this.getWidth();
-            final String s = this.fontRendererInstance.func_78269_a(this.text.substring(this.lineScrollOffset), j);
+            final String s = this.fontRendererInstance.trimStringToWidth(this.text.substring(this.lineScrollOffset), j);
             final int k = s.length() + this.lineScrollOffset;
             if (p_146199_1_ == this.lineScrollOffset) {
-                this.lineScrollOffset -= this.fontRendererInstance.func_78262_a(this.text, j, true).length();
+                this.lineScrollOffset -= this.fontRendererInstance.trimStringToWidth(this.text, j, true).length();
             }
             if (p_146199_1_ > k) {
                 this.lineScrollOffset += p_146199_1_ - k;
@@ -505,7 +505,7 @@ public class GuiTextSelector extends GuiValueSelector
             else if (p_146199_1_ <= this.lineScrollOffset) {
                 this.lineScrollOffset -= this.lineScrollOffset - p_146199_1_;
             }
-            this.lineScrollOffset = MathHelper.func_76125_a(this.lineScrollOffset, 0, i);
+            this.lineScrollOffset = MathHelper.clamp_int(this.lineScrollOffset, 0, i);
         }
     }
     

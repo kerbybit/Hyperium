@@ -13,7 +13,7 @@ public class GuiSlotConfigList extends GuiScrollingList
     private static final int entryHeight = 15;
     
     public GuiSlotConfigList(final GuiConfigList parent, final ArrayList<FieldContainer> entries, final int listWidth) {
-        super(Minecraft.func_71410_x(), listWidth, parent.field_146295_m, 24, parent.field_146295_m - 35, 10, 15, parent.field_146294_l, parent.field_146295_m);
+        super(Minecraft.getMinecraft(), listWidth, parent.height, 24, parent.height - 35, 10, 15, parent.width, parent.height);
         this.parent = parent;
         this.entries = entries;
     }
@@ -47,7 +47,7 @@ public class GuiSlotConfigList extends GuiScrollingList
     
     @Override
     protected void drawBackground() {
-        this.parent.func_146276_q_();
+        this.parent.drawDefaultBackground();
     }
     
     @Override
@@ -60,6 +60,6 @@ public class GuiSlotConfigList extends GuiScrollingList
         final FieldContainer mc = this.entries.get(idx);
         final String name = mc.name();
         final FontRenderer font = this.parent.getFontRenderer();
-        font.func_78276_b(font.func_78269_a(name, this.listWidth - 10), this.left + 3, top + 2, 16777215);
+        font.drawString(font.trimStringToWidth(name, this.listWidth - 10), this.left + 3, top + 2, 16777215);
     }
 }

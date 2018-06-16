@@ -25,10 +25,10 @@ public class GuiConfigList extends GuiScreen
         this.selected = -1;
         this.ignoredCategories = (Set<String>)Sets.newHashSet();
         this.entries = new ArrayList<FieldContainer>(Config.instance().getFields());
-        this.fontRendererObj = Minecraft.func_71410_x().field_71466_p;
+        this.fontRendererObj = Minecraft.getMinecraft().fontRendererObj;
     }
     
-    public void func_73866_w_() {
+    public void initGui() {
         this.updateCounter = 0;
         this.lastUpdate = 0L;
         this.entries.removeIf(con -> this.ignoredCategories.contains(con.category()));
@@ -44,63 +44,63 @@ public class GuiConfigList extends GuiScreen
                     this.entries.add(i, new SpacerContainer("�l" + con2.category()));
                 }
             }
-            this.listWidth = Math.max(this.listWidth, this.getFontRenderer().func_78256_a(con2.name()) + 10);
+            this.listWidth = Math.max(this.listWidth, this.getFontRenderer().getStringWidth(con2.name()) + 10);
         }
         this.entries.add(new SpacerContainer(""));
-        final ScaledResolution res = new ScaledResolution(this.field_146297_k);
-        this.listWidth = Math.min(this.listWidth, res.func_78326_a() / 2 - 20);
+        final ScaledResolution res = new ScaledResolution(this.mc);
+        this.listWidth = Math.min(this.listWidth, res.getScaledWidth() / 2 - 20);
         this.modList = new GuiSlotConfigList(this, this.entries, this.listWidth);
         this.addButtons();
     }
     
     private void addButtons() {
         final int buttonWidth = 75;
-        final int xBetweenButtons = this.modList.right() + (this.field_146294_l - this.modList.right()) / 2;
-        final Buttons.GuiButtonDone buttonDone = new Buttons.GuiButtonDone(6, xBetweenButtons - 75 - 10, this.field_146295_m - 38, 75) {
-            public void func_146118_a(final int mouseX, final int mouseY) {
-                if (this.func_146115_a()) {
+        final int xBetweenButtons = this.modList.right() + (this.width - this.modList.right()) / 2;
+        final Buttons.GuiButtonDone buttonDone = new Buttons.GuiButtonDone(6, xBetweenButtons - 75 - 10, this.height - 38, 75) {
+            public void mouseReleased(final int mouseX, final int mouseY) {
+                if (this.isMouseOver()) {
                     GuiConfigList.this.prepareSlotChange();
-                    GuiConfigList.this.field_146297_k.func_147108_a((GuiScreen)null);
-                    if (GuiConfigList.this.field_146297_k.field_71462_r == null) {
-                        GuiConfigList.this.field_146297_k.func_71381_h();
+                    GuiConfigList.this.mc.displayGuiScreen((GuiScreen)null);
+                    if (GuiConfigList.this.mc.currentScreen == null) {
+                        GuiConfigList.this.mc.setIngameFocus();
                     }
                     Config.instance().save();
                     Config.instance().load();
                 }
             }
         };
-        this.field_146292_n.add(buttonDone);
-        final Buttons.GuiButtonCancel buttonCancel = new Buttons.GuiButtonCancel(6, xBetweenButtons + 10, this.field_146295_m - 38, 75) {
-            public void func_146118_a(final int mouseX, final int mouseY) {
-                if (this.func_146115_a()) {
-                    GuiConfigList.this.field_146297_k.func_147108_a((GuiScreen)null);
-                    if (GuiConfigList.this.field_146297_k.field_71462_r == null) {
-                        GuiConfigList.this.field_146297_k.func_71381_h();
+        this.buttonList.add(buttonDone);
+        final Buttons.GuiButtonCancel buttonCancel = new Buttons.GuiButtonCancel(6, xBetweenButtons + 10, this.height - 38, 75) {
+            public void mouseReleased(final int mouseX, final int mouseY) {
+                if (this.isMouseOver()) {
+                    GuiConfigList.this.mc.displayGuiScreen((GuiScreen)null);
+                    if (GuiConfigList.this.mc.currentScreen == null) {
+                        GuiConfigList.this.mc.setIngameFocus();
                     }
                 }
             }
         };
-        this.field_146292_n.add(buttonCancel);
-        final Buttons.GuiButtonReset buttonRestore = new Buttons.GuiButtonReset(6, xBetweenButtons - 37, this.field_146295_m - 64, 75) {
-            public void func_146118_a(final int mouseX, final int mouseY) {
-                if (this.func_146115_a() && GuiConfigList.this.selectedField != null) {
+        this.buttonList.add(buttonCancel);
+        final Buttons.GuiButtonReset buttonRestore = new Buttons.GuiButtonReset(6, xBetweenButtons - 37, this.height - 64, 75) {
+            public void mouseReleased(final int mouseX, final int mouseY) {
+                if (this.isMouseOver() && GuiConfigList.this.selectedField != null) {
                     GuiConfigList.this.valueSelector.setValue(GuiConfigList.this.selectedField.getValue());
                     GuiConfigList.this.updateInfo("Reset");
                 }
             }
         };
-        this.field_146292_n.add(buttonRestore);
+        this.buttonList.add(buttonRestore);
     }
     
-    protected void func_73869_a(final char c, final int i) throws IOException {
-        super.func_73869_a(c, i);
+    protected void keyTyped(final char c, final int i) throws IOException {
+        super.keyTyped(c, i);
         if (this.valueSelector != null) {
             this.valueSelector.keyTyped(c, i);
         }
     }
     
-    public void func_73864_a(final int i, final int j, final int k) throws IOException {
-        super.func_73864_a(i, j, k);
+    public void mouseClicked(final int i, final int j, final int k) throws IOException {
+        super.mouseClicked(i, j, k);
         if (this.valueSelector != null) {
             this.valueSelector.mouseClicked(i, j, k);
         }
@@ -122,10 +122,10 @@ public class GuiConfigList extends GuiScreen
         }
         this.prepareSlotChange();
         this.selectedField = (((this.selected = index) >= 0 && index <= this.entries.size()) ? this.entries.get(this.selected) : null);
-        final int middle = this.field_146294_l / 2;
+        final int middle = this.width / 2;
         final int horizontalSpacing = 10;
         final int textfieldLeft = middle + horizontalSpacing;
-        final int textfieldTop = this.field_146295_m / 2 - 30;
+        final int textfieldTop = this.height / 2 - 30;
         this.valueSelector = GuiValueSelector.getFromField(this.selectedField, textfieldLeft, textfieldTop, middle - horizontalSpacing * 2);
     }
     
@@ -149,27 +149,27 @@ public class GuiConfigList extends GuiScreen
         this.updateCounter = 0;
     }
     
-    public void func_73863_a(final int mouseX, final int mouseY, final float partialTicks) {
+    public void drawScreen(final int mouseX, final int mouseY, final float partialTicks) {
         this.modList.drawScreen(mouseX, mouseY, partialTicks);
         if (this.valueSelector != null) {
             this.valueSelector.draw();
         }
-        final ScaledResolution res = new ScaledResolution(Minecraft.func_71410_x());
+        final ScaledResolution res = new ScaledResolution(Minecraft.getMinecraft());
         final String text = "�e�lVanilla Enhancements Config";
-        final int middle = res.func_78326_a() / 2;
-        this.func_73732_a(this.fontRendererObj, text, middle, 12, 16777215);
+        final int middle = res.getScaledWidth() / 2;
+        this.drawCenteredString(this.fontRendererObj, text, middle, 12, 16777215);
         if (this.selectedField != null) {
             final int maxlinewidth = middle - 20;
             final String[] info = this.lineBreaksAfterWidth(this.selectedField.name(), maxlinewidth);
             int height = 50;
             for (final String str : info) {
-                this.func_73731_b(this.fontRendererObj, str, middle + 10, height, 16777215);
-                height += this.fontRendererObj.field_78288_b;
+                this.drawString(this.fontRendererObj, str, middle + 10, height, 16777215);
+                height += this.fontRendererObj.FONT_HEIGHT;
             }
         }
-        super.func_73863_a(mouseX, mouseY, partialTicks);
+        super.drawScreen(mouseX, mouseY, partialTicks);
         if (System.currentTimeMillis() - this.lastUpdate <= 1000L) {
-            this.fontRendererObj.func_78276_b(this.updateInfo, res.func_78326_a() - this.fontRendererObj.func_78256_a(this.updateInfo) - 1, res.func_78328_b() - this.fontRendererObj.field_78288_b - 1, 0xFFFFFF | 255 - this.updateCounter << 24);
+            this.fontRendererObj.drawString(this.updateInfo, res.getScaledWidth() - this.fontRendererObj.getStringWidth(this.updateInfo) - 1, res.getScaledHeight() - this.fontRendererObj.FONT_HEIGHT - 1, 0xFFFFFF | 255 - this.updateCounter << 24);
             this.updateCounter += 3;
             this.updateCounter = Math.max(this.updateCounter, 150);
         }
@@ -177,9 +177,9 @@ public class GuiConfigList extends GuiScreen
     
     private String[] lineBreaksAfterWidth(String text, final int maxlinewidth) {
         final StringBuilder output = new StringBuilder();
-        while (this.fontRendererObj.func_78256_a(text) > maxlinewidth) {
+        while (this.fontRendererObj.getStringWidth(text) > maxlinewidth) {
             int index;
-            for (index = 2; this.fontRendererObj.func_78256_a(text.substring(0, index)) < maxlinewidth; ++index) {}
+            for (index = 2; this.fontRendererObj.getStringWidth(text.substring(0, index)) < maxlinewidth; ++index) {}
             --index;
             String subText = text.substring(0, index);
             subText = subText.trim();

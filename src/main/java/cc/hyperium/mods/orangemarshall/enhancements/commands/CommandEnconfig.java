@@ -18,31 +18,31 @@ public class CommandEnconfig implements ICommand
         this.aliases.add("econfig");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "enconfig";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "enconfig";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
-        new DelayedTask(2, () -> Minecraft.func_71410_x().func_147108_a((GuiScreen)new GuiConfigList()));
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
+        new DelayedTask(2, () -> Minecraft.getMinecraft().displayGuiScreen((GuiScreen)new GuiConfigList()));
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

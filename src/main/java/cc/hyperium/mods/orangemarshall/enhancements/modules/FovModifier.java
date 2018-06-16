@@ -23,21 +23,21 @@ public class FovModifier
     @SubscribeEvent
     public void onFovChange(final FOVUpdateEvent event) {
         float base = 1.0f;
-        if (event.entity.func_70051_ag()) {
+        if (event.entity.isSprinting()) {
             base += (float)(0.15000000596046448 * Config.instance().sprintFovFactor);
         }
-        if (event.entity.func_71011_bu() != null && event.entity.func_71011_bu().func_77973_b().equals(Items.field_151031_f)) {
-            final int duration = (int)Math.min(event.entity.func_71057_bx(), 20.0f);
+        if (event.entity.getItemInUse() != null && event.entity.getItemInUse().getItem().equals(Items.bow)) {
+            final int duration = (int)Math.min(event.entity.getItemInUseDuration(), 20.0f);
             final float modifier = FovModifier.MODIFIER_BY_TICK.get(duration);
             base -= (float)(modifier * Config.instance().bowFovFactor);
         }
-        final Collection<PotionEffect> effects = (Collection<PotionEffect>)event.entity.func_70651_bq();
+        final Collection<PotionEffect> effects = (Collection<PotionEffect>)event.entity.getActivePotionEffects();
         for (final PotionEffect effect : effects) {
-            if (effect.func_76456_a() == 1) {
-                base += (float)(0.1f * (effect.func_76458_c() + 1) * Config.instance().speedFovFactor);
+            if (effect.getPotionID() == 1) {
+                base += (float)(0.1f * (effect.getAmplifier() + 1) * Config.instance().speedFovFactor);
             }
-            if (effect.func_76456_a() == 2) {
-                base += (float)(-0.075f * (effect.func_76458_c() + 1) * Config.instance().slownessFovFactor);
+            if (effect.getPotionID() == 2) {
+                base += (float)(-0.075f * (effect.getAmplifier() + 1) * Config.instance().slownessFovFactor);
             }
         }
         event.newfov = base;

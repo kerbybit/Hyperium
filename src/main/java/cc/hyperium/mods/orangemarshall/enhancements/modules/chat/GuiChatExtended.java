@@ -23,33 +23,33 @@ public class GuiChatExtended extends GuiChat
         this.defaultInputTextField = defaultText;
     }
     
-    public void func_73866_w_() {
-        super.func_73866_w_();
-        this.field_146415_a.func_146203_f(256);
-        this.field_146415_a.func_146180_a(this.defaultInputTextField);
+    public void initGui() {
+        super.initGui();
+        this.inputField.setMaxStringLength(256);
+        this.inputField.setText(this.defaultInputTextField);
     }
     
-    protected void func_73869_a(final char typedChar, final int keyCode) throws IOException {
+    protected void keyTyped(final char typedChar, final int keyCode) throws IOException {
         if (keyCode == 28 || keyCode == 156) {
-            final String text = this.field_146415_a.func_146179_b().trim();
+            final String text = this.inputField.getText().trim();
             if (text.length() > 0) {
-                this.field_146297_k.field_71456_v.func_146158_b().func_146239_a(text);
-                if (ClientCommandHandler.instance.func_71556_a((ICommandSender)this.field_146297_k.field_71439_g, text) != 0) {
-                    this.field_146297_k.func_147108_a((GuiScreen)null);
+                this.mc.ingameGUI.getChatGUI().addToSentMessages(text);
+                if (ClientCommandHandler.instance.executeCommand((ICommandSender)this.mc.thePlayer, text) != 0) {
+                    this.mc.displayGuiScreen((GuiScreen)null);
                     return;
                 }
                 final C01PacketChatMessage packet = new C01PacketChatMessage(text);
                 GuiChatExtended.message.set(packet, text);
-                this.field_146297_k.field_71439_g.field_71174_a.func_147297_a((Packet)packet);
+                this.mc.thePlayer.sendQueue.addToSendQueue((Packet)packet);
             }
-            this.field_146297_k.func_147108_a((GuiScreen)null);
+            this.mc.displayGuiScreen((GuiScreen)null);
         }
         else {
-            super.func_73869_a(typedChar, keyCode);
+            super.keyTyped(typedChar, keyCode);
         }
     }
     
     static {
-        message = new FieldWrapper<String>(Enhancements.isObfuscated ? "field_149440_a" : "message", C01PacketChatMessage.class);
+        message = new FieldWrapper<String>(Enhancements.isObfuscated ? "message" : "message", C01PacketChatMessage.class);
     }
 }

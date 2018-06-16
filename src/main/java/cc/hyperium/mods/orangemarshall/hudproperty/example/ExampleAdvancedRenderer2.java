@@ -1,7 +1,8 @@
 package cc.hyperium.mods.orangemarshall.hudproperty.example;
 
-import cc.hyperium.mods.orangemarshall.hudproperty.base.*;
-import cc.hyperium.mods.orangemarshall.hudproperty.util.*;
+import cc.hyperium.mods.orangemarshall.hudproperty.base.IAdvancedRenderer;
+import cc.hyperium.mods.orangemarshall.hudproperty.util.ScreenPosition;
+import net.minecraft.client.gui.FontRenderer;
 
 public class ExampleAdvancedRenderer2 implements IAdvancedRenderer
 {

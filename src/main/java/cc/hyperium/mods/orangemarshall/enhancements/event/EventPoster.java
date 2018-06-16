@@ -16,7 +16,7 @@ public class EventPoster
     private boolean prevRight;
     
     public EventPoster() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         this.prevLeft = false;
         this.prevRight = false;
         MinecraftForge.EVENT_BUS.register((Object)this);
@@ -24,8 +24,8 @@ public class EventPoster
     
     @SubscribeEvent
     public void onClick(final InputEvent.MouseInputEvent event) {
-        final boolean leftclick = EventPoster.pressTime.get(this.mc.field_71474_y.field_74312_F) != 0;
-        final boolean rightclick = EventPoster.pressTime.get(this.mc.field_71474_y.field_74313_G) != 0;
+        final boolean leftclick = EventPoster.pressTime.get(this.mc.gameSettings.keyBindAttack) != 0;
+        final boolean rightclick = EventPoster.pressTime.get(this.mc.gameSettings.keyBindUseItem) != 0;
         if (leftclick) {
             if (!this.prevLeft) {
                 MinecraftForge.EVENT_BUS.post((Event)new LeftClickEvent());
@@ -47,6 +47,6 @@ public class EventPoster
     }
     
     static {
-        pressTime = new FieldWrapper<Integer>(Enhancements.isObfuscated ? "field_151474_i" : "pressTime", KeyBinding.class);
+        pressTime = new FieldWrapper<Integer>(Enhancements.isObfuscated ? "pressTime" : "pressTime", KeyBinding.class);
     }
 }

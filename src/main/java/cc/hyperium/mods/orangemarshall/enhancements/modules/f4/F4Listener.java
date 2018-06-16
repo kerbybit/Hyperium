@@ -27,7 +27,7 @@ public class F4Listener
     private KeyBinding keybind;
     
     public F4Listener() {
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         this.f4 = new F4Screen(this.mc);
         this.config = Config.instance();
         this.prevDebug = false;
@@ -58,23 +58,23 @@ public class F4Listener
         final ServerAddress curAddress = NetworkInfo.getInstance().getCurrentServerAddress();
         final String ign = PlayerDetails.getOwnName();
         final int ownPing = NetworkInfo.getInstance().getPing(ign);
-        String serverInfo = (curAddress == null) ? "" : curAddress.func_78861_a();
+        String serverInfo = (curAddress == null) ? "" : curAddress.getIP();
         if (ownPing >= 0) {
             serverInfo = serverInfo + " (" + ownPing + "ms)";
         }
-        final int left = resolution.func_78326_a() - this.mc.field_71466_p.func_78256_a(serverInfo) >> 1;
+        final int left = resolution.getScaledWidth() - this.mc.fontRendererObj.getStringWidth(serverInfo) >> 1;
         final int top = this.isBossbarVisible() ? 20 : 10;
-        this.mc.field_71466_p.func_175065_a(serverInfo, (float)left, (float)top, 16777215, true);
+        this.mc.fontRendererObj.drawString(serverInfo, (float)left, (float)top, 16777215, true);
     }
     
     private boolean isBossbarVisible() {
-        return BossStatus.field_82827_c != null && BossStatus.field_82826_b > 0 && !this.config.hideBossBar;
+        return BossStatus.bossName != null && BossStatus.statusBarTime > 0 && !this.config.hideBossBar;
     }
     
     private boolean isTabVisible() {
-        final ScoreObjective scoreobjective = this.mc.field_71441_e.func_96441_U().func_96539_a(0);
-        final NetHandlerPlayClient handler = this.mc.field_71439_g.field_71174_a;
-        return (this.mc.field_71474_y.field_74321_H.func_151470_d() || TabToggle.instance().getShallRender()) && (!this.mc.func_71387_A() || handler.func_175106_d().size() > 1 || scoreobjective != null);
+        final ScoreObjective scoreobjective = this.mc.theWorld.getScoreboard().getObjectiveInDisplaySlot(0);
+        final NetHandlerPlayClient handler = this.mc.thePlayer.sendQueue;
+        return (this.mc.gameSettings.keyBindPlayerList.isKeyDown() || TabToggle.instance().getShallRender()) && (!this.mc.isIntegratedServerRunning() || handler.getPlayerInfoMap().size() > 1 || scoreobjective != null);
     }
     
     private void printF4Side(final List<String> list, final Alignment alignment, final ScaledResolution resolution) {
@@ -88,11 +88,11 @@ public class F4Listener
                     if (alignment != Alignment.RIGHT) {
                         throw new IllegalArgumentException("Invalid alignment " + alignment);
                     }
-                    final int left = resolution.func_78326_a() - 1 - this.mc.field_71466_p.func_78256_a(entry);
+                    final int left = resolution.getScaledWidth() - 1 - this.mc.fontRendererObj.getStringWidth(entry);
                     this.printF4SideTextAt(entry, left, top);
                 }
             }
-            top += this.mc.field_71466_p.field_78288_b;
+            top += this.mc.fontRendererObj.FONT_HEIGHT;
         }
     }
     
@@ -100,42 +100,42 @@ public class F4Listener
         int color = 16777215;
         if (Config.instance().showBackgroundInF4) {
             color = 14737632;
-            final int textWidth = this.mc.field_71466_p.func_78256_a(text);
-            Gui.func_73734_a(left - 1, top - 1, left + textWidth + 1, top + this.mc.field_71466_p.field_78288_b - 1, -1873784752);
+            final int textWidth = this.mc.fontRendererObj.getStringWidth(text);
+            Gui.drawRect(left - 1, top - 1, left + textWidth + 1, top + this.mc.fontRendererObj.FONT_HEIGHT - 1, -1873784752);
         }
-        this.mc.field_71466_p.func_175065_a(text, (float)left, (float)top, color, true);
+        this.mc.fontRendererObj.drawString(text, (float)left, (float)top, color, true);
     }
     
     @SubscribeEvent
     public void onTick(final InputEvent.KeyInputEvent e) {
-        if (this.keybind.func_151463_i() != 61) {
-            if (this.keybind.func_151468_f()) {
+        if (this.keybind.getKeyCode() != 61) {
+            if (this.keybind.isPressed()) {
                 final Config config = this.config;
                 final boolean showF4Screen = !this.config.showF4Screen;
                 config.showF4Screen = showF4Screen;
                 final boolean showF4 = showF4Screen;
                 if (showF4) {
-                    this.mc.field_71474_y.field_74330_P = false;
+                    this.mc.gameSettings.showDebugInfo = false;
                 }
             }
-            if (this.config.showF4Screen && this.mc.field_71474_y.field_74330_P && !this.prevDebug) {
+            if (this.config.showF4Screen && this.mc.gameSettings.showDebugInfo && !this.prevDebug) {
                 this.config.showF4Screen = false;
             }
-            if (!this.mc.field_71474_y.field_74330_P && !this.config.showF4Screen) {
+            if (!this.mc.gameSettings.showDebugInfo && !this.config.showF4Screen) {
                 this.status = ShownScreen.NONE;
             }
-            if (this.mc.field_71474_y.field_74330_P) {
+            if (this.mc.gameSettings.showDebugInfo) {
                 this.status = ShownScreen.F3;
             }
             if (this.config.showF4Screen) {
                 this.status = ShownScreen.F4;
             }
         }
-        else if (this.keybind.func_151468_f()) {
+        else if (this.keybind.isPressed()) {
             this.onPressF4();
         }
         this.prevF4 = this.config.showF4Screen;
-        this.prevDebug = this.mc.field_71474_y.field_74330_P;
+        this.prevDebug = this.mc.gameSettings.showDebugInfo;
     }
     
     private void onPressF4() {
@@ -144,19 +144,19 @@ public class F4Listener
         }
         switch (this.status) {
             case NONE: {
-                this.mc.field_71474_y.field_74330_P = true;
+                this.mc.gameSettings.showDebugInfo = true;
                 this.config.showF4Screen = false;
                 this.status = ShownScreen.F3;
                 break;
             }
             case F3: {
-                this.mc.field_71474_y.field_74330_P = false;
+                this.mc.gameSettings.showDebugInfo = false;
                 this.config.showF4Screen = true;
                 this.status = ShownScreen.F4;
                 break;
             }
             case F4: {
-                this.mc.field_71474_y.field_74330_P = false;
+                this.mc.gameSettings.showDebugInfo = false;
                 this.config.showF4Screen = false;
                 this.status = ShownScreen.NONE;
                 break;

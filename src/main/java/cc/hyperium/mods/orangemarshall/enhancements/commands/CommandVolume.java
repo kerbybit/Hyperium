@@ -19,19 +19,19 @@ public class CommandVolume implements ICommand
         (this.aliases = new ArrayList()).add("volume");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "volume";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "volume <profile>";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         if (args.length == 1) {
             try {
                 final int profile = Integer.valueOf(args[0]);
@@ -46,7 +46,7 @@ public class CommandVolume implements ICommand
             catch (NumberFormatException e) {
                 ChatUtil.addMessage("Invalid arguments!");
             }
-            Minecraft.func_71410_x().field_71474_y.func_74303_b();
+            Minecraft.getMinecraft().gameSettings.saveOptions();
         }
         else {
             ChatUtil.addMessage("Invalid arguments!");
@@ -54,10 +54,10 @@ public class CommandVolume implements ICommand
     }
     
     private void setSoundSettings(final Integer[] values) {
-        final Minecraft mc = Minecraft.func_71410_x();
+        final Minecraft mc = Minecraft.getMinecraft();
         final SoundCategory[] cat = SoundCategory.values();
         for (int i = 0; i < values.length && i < cat.length; ++i) {
-            mc.field_71474_y.func_151439_a(cat[i], values[i] / 100.0f);
+            mc.gameSettings.setSoundLevel(cat[i], values[i] / 100.0f);
         }
     }
     
@@ -80,15 +80,15 @@ public class CommandVolume implements ICommand
         this.setSoundSettings(list);
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

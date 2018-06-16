@@ -22,114 +22,114 @@ public class CustomHitboxRenderManager extends RenderManager
     
     public CustomHitboxRenderManager(final TextureManager renderEngineIn, final RenderItem itemRendererIn) {
         super(renderEngineIn, itemRendererIn);
-        this.mc = Minecraft.func_71410_x();
+        this.mc = Minecraft.getMinecraft();
         this.config = Config.instance();
     }
     
     public void initialize() {
-        CustomHitboxRenderManager.renderManagerField.set(this.mc.field_71438_f, this);
+        CustomHitboxRenderManager.renderManagerField.set(this.mc.renderGlobal, this);
     }
     
-    public boolean func_147939_a(final Entity entity, final double x, final double y, final double z, final float entityYaw, final float partialTicks, final boolean p_147939_10_) {
+    public boolean doRenderEntity(final Entity entity, final double x, final double y, final double z, final float entityYaw, final float partialTicks, final boolean hideDebugBox) {
         Render<Entity> render = null;
         try {
-            render = (Render<Entity>)this.func_78713_a(entity);
-            if (render != null && this.field_78724_e != null) {
+            render = (Render<Entity>)this.getEntityRenderObject(entity);
+            if (render != null && this.renderEngine != null) {
                 try {
                     if (render instanceof RendererLivingEntity) {
                         final boolean renderOutlines = CustomHitboxRenderManager.renderOutlinesField.get(this);
-                        ((RendererLivingEntity)render).func_177086_a(renderOutlines);
+                        ((RendererLivingEntity)render).setRenderOutlines(renderOutlines);
                     }
-                    render.func_76986_a(entity, x, y, z, entityYaw, partialTicks);
+                    render.doRender(entity, x, y, z, entityYaw, partialTicks);
                 }
                 catch (Throwable throwable2) {
-                    throw new ReportedException(CrashReport.func_85055_a(throwable2, "Rendering entity in world"));
+                    throw new ReportedException(CrashReport.makeCrashReport(throwable2, "Rendering entity in world"));
                 }
                 try {
                     final boolean renderOutlines = CustomHitboxRenderManager.renderOutlinesField.get(this);
                     if (!renderOutlines) {
-                        render.func_76979_b(entity, x, y, z, entityYaw, partialTicks);
+                        render.doRenderShadowAndFire(entity, x, y, z, entityYaw, partialTicks);
                     }
                 }
                 catch (Throwable throwable3) {
-                    throw new ReportedException(CrashReport.func_85055_a(throwable3, "Post-rendering entity in world"));
+                    throw new ReportedException(CrashReport.makeCrashReport(throwable3, "Post-rendering entity in world"));
                 }
-                final boolean debugBoundingBox = this.func_178634_b();
-                final boolean red = this.config.enableRedHitboxOnMouseover && (this.mc.field_71476_x != null && this.mc.field_71476_x.field_72308_g != null && this.mc.field_71476_x.field_72308_g == entity);
-                boolean flag = debugBoundingBox && !entity.func_82150_aj() && !p_147939_10_ && !(entity instanceof EntityArmorStand) && !(entity instanceof EntityExpBottle) && !(entity instanceof EntityItem) && !(entity instanceof EntityItemFrame) && !(entity instanceof EntityMinecart) && !(entity instanceof EntityPainting) && !(entity instanceof EntityXPOrb);
+                final boolean debugBoundingBox = this.isDebugBoundingBox();
+                final boolean red = this.config.enableRedHitboxOnMouseover && (this.mc.objectMouseOver != null && this.mc.objectMouseOver.entityHit != null && this.mc.objectMouseOver.entityHit == entity);
+                boolean flag = debugBoundingBox && !entity.isInvisible() && !hideDebugBox && !(entity instanceof EntityArmorStand) && !(entity instanceof EntityExpBottle) && !(entity instanceof EntityItem) && !(entity instanceof EntityItemFrame) && !(entity instanceof EntityMinecart) && !(entity instanceof EntityPainting) && !(entity instanceof EntityXPOrb);
                 if (this.config.enableHitboxDistance) {
-                    flag = (flag && debugBoundingBox && !entity.func_82150_aj() && !p_147939_10_ && this.getDistanceSqToEntity((Entity)this.mc.field_71439_g, entity) > this.config.hitboxDistance * this.config.hitboxDistance);
+                    flag = (flag && debugBoundingBox && !entity.isInvisible() && !hideDebugBox && this.getDistanceSqToEntity((Entity)this.mc.thePlayer, entity) > this.config.hitboxDistance * this.config.hitboxDistance);
                 }
                 if (flag) {
                     try {
                         this.renderDebugBoundingBox(entity, x, y, z, entityYaw, partialTicks, red);
                     }
                     catch (Throwable throwable4) {
-                        throw new ReportedException(CrashReport.func_85055_a(throwable4, "Rendering entity hitbox in world"));
+                        throw new ReportedException(CrashReport.makeCrashReport(throwable4, "Rendering entity hitbox in world"));
                     }
                 }
             }
-            else if (this.field_78724_e != null) {
+            else if (this.renderEngine != null) {
                 return false;
             }
             return true;
         }
         catch (Throwable throwable5) {
-            final CrashReport crashreport = CrashReport.func_85055_a(throwable5, "Rendering entity in world");
-            final CrashReportCategory crashreportcategory = crashreport.func_85058_a("Entity being rendered");
-            entity.func_85029_a(crashreportcategory);
-            final CrashReportCategory crashreportcategory2 = crashreport.func_85058_a("Renderer details");
-            crashreportcategory2.func_71507_a("Assigned renderer", (Object)render);
-            crashreportcategory2.func_71507_a("Location", (Object)CrashReportCategory.func_85074_a(x, y, z));
-            crashreportcategory2.func_71507_a("Rotation", (Object)entityYaw);
-            crashreportcategory2.func_71507_a("Delta", (Object)partialTicks);
+            final CrashReport crashreport = CrashReport.makeCrashReport(throwable5, "Rendering entity in world");
+            final CrashReportCategory crashreportcategory = crashreport.makeCategory("Entity being rendered");
+            entity.addEntityCrashInfo(crashreportcategory);
+            final CrashReportCategory crashreportcategory2 = crashreport.makeCategory("Renderer details");
+            crashreportcategory2.addCrashSection("Assigned renderer", (Object)render);
+            crashreportcategory2.addCrashSection("Location", (Object)CrashReportCategory.getCoordinateInfo(x, y, z));
+            crashreportcategory2.addCrashSection("Rotation", (Object)entityYaw);
+            crashreportcategory2.addCrashSection("Delta", (Object)partialTicks);
             throw new ReportedException(crashreport);
         }
     }
     
-    private void renderDebugBoundingBox(final Entity entityIn, final double p_85094_2_, final double p_85094_4_, final double p_85094_6_, final float p_85094_8_, final float p_85094_9_, final boolean red) {
-        GlStateManager.func_179132_a(false);
-        GlStateManager.func_179090_x();
-        GlStateManager.func_179140_f();
-        GlStateManager.func_179129_p();
-        GlStateManager.func_179084_k();
-        final float f = entityIn.field_70130_N / 2.0f;
-        final AxisAlignedBB axisalignedbb = entityIn.func_174813_aQ();
-        final AxisAlignedBB axisalignedbb2 = new AxisAlignedBB(axisalignedbb.field_72340_a - entityIn.field_70165_t + p_85094_2_, axisalignedbb.field_72338_b - entityIn.field_70163_u + p_85094_4_, axisalignedbb.field_72339_c - entityIn.field_70161_v + p_85094_6_, axisalignedbb.field_72336_d - entityIn.field_70165_t + p_85094_2_, axisalignedbb.field_72337_e - entityIn.field_70163_u + p_85094_4_, axisalignedbb.field_72334_f - entityIn.field_70161_v + p_85094_6_);
+    private void renderDebugBoundingBox(final Entity entityIn, final double x, final double y, final double z, final float entityYaw, final float partialTicks, final boolean red) {
+        GlStateManager.depthMask(false);
+        GlStateManager.disableTexture2D();
+        GlStateManager.disableLighting();
+        GlStateManager.disableCull();
+        GlStateManager.disableBlend();
+        final float f = entityIn.width / 2.0f;
+        final AxisAlignedBB axisalignedbb = entityIn.getEntityBoundingBox();
+        final AxisAlignedBB axisalignedbb2 = new AxisAlignedBB(axisalignedbb.minX - entityIn.posX + x, axisalignedbb.minY - entityIn.posY + y, axisalignedbb.minZ - entityIn.posZ + z, axisalignedbb.maxX - entityIn.posX + x, axisalignedbb.maxY - entityIn.posY + y, axisalignedbb.maxZ - entityIn.posZ + z);
         if (red) {
-            RenderGlobal.func_181563_a(axisalignedbb2, 255, 0, 0, 255);
+            RenderGlobal.drawOutlinedBoundingBox(axisalignedbb2, 255, 0, 0, 255);
         }
         else {
-            RenderGlobal.func_181563_a(axisalignedbb2, 255, 255, 255, 255);
+            RenderGlobal.drawOutlinedBoundingBox(axisalignedbb2, 255, 255, 255, 255);
         }
         if (entityIn instanceof EntityLivingBase && !this.config.disableHitboxEyeHeight) {
-            RenderGlobal.func_181563_a(new AxisAlignedBB(p_85094_2_ - f, p_85094_4_ + entityIn.func_70047_e() - 0.009999999776482582, p_85094_6_ - f, p_85094_2_ + f, p_85094_4_ + entityIn.func_70047_e() + 0.009999999776482582, p_85094_6_ + f), 255, 0, 0, 255);
+            RenderGlobal.drawOutlinedBoundingBox(new AxisAlignedBB(x - f, y + entityIn.getEyeHeight() - 0.009999999776482582, z - f, x + f, y + entityIn.getEyeHeight() + 0.009999999776482582, z + f), 255, 0, 0, 255);
         }
-        final Tessellator tessellator = Tessellator.func_178181_a();
+        final Tessellator tessellator = Tessellator.getInstance();
         if (!this.config.disableHitboxEyesight) {
-            final WorldRenderer worldrenderer = tessellator.func_178180_c();
-            final Vec3 vec3 = entityIn.func_70676_i(p_85094_9_);
-            worldrenderer.func_181668_a(3, DefaultVertexFormats.field_181706_f);
-            worldrenderer.func_181662_b(p_85094_2_, p_85094_4_ + entityIn.func_70047_e(), p_85094_6_).func_181669_b(0, 0, 255, 255).func_181675_d();
-            worldrenderer.func_181662_b(p_85094_2_ + vec3.field_72450_a * 2.0, p_85094_4_ + entityIn.func_70047_e() + vec3.field_72448_b * 2.0, p_85094_6_ + vec3.field_72449_c * 2.0).func_181669_b(0, 0, 255, 255).func_181675_d();
-            tessellator.func_78381_a();
+            final WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+            final Vec3 vec3 = entityIn.getLook(partialTicks);
+            worldrenderer.begin(3, DefaultVertexFormats.POSITION_COLOR);
+            worldrenderer.pos(x, y + entityIn.getEyeHeight(), z).color(0, 0, 255, 255).endVertex();
+            worldrenderer.pos(x + vec3.xCoord * 2.0, y + entityIn.getEyeHeight() + vec3.yCoord * 2.0, z + vec3.zCoord * 2.0).color(0, 0, 255, 255).endVertex();
+            tessellator.draw();
         }
-        GlStateManager.func_179098_w();
-        GlStateManager.func_179145_e();
-        GlStateManager.func_179089_o();
-        GlStateManager.func_179084_k();
-        GlStateManager.func_179132_a(true);
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableLighting();
+        GlStateManager.enableCull();
+        GlStateManager.disableBlend();
+        GlStateManager.depthMask(true);
     }
     
     private float getDistanceSqToEntity(final Entity entityIn, final Entity entityIn2) {
-        final float f = (float)(entityIn2.field_70165_t - entityIn.field_70165_t);
-        final float f2 = (float)(entityIn2.field_70163_u - entityIn.field_70163_u);
-        final float f3 = (float)(entityIn2.field_70161_v - entityIn.field_70161_v);
+        final float f = (float)(entityIn2.posX - entityIn.posX);
+        final float f2 = (float)(entityIn2.posY - entityIn.posY);
+        final float f3 = (float)(entityIn2.posZ - entityIn.posZ);
         return f * f + f2 * f2 + f3 * f3;
     }
     
     static {
-        renderOutlinesField = new FieldWrapper<Boolean>(Enhancements.isObfuscated ? "field_178639_r" : "renderOutlines", RenderManager.class);
-        renderManagerField = new FieldWrapper<RenderManager>(Enhancements.isObfuscated ? "field_175010_j" : "renderManager", RenderGlobal.class);
+        renderOutlinesField = new FieldWrapper<Boolean>(Enhancements.isObfuscated ? "renderOutlines" : "renderOutlines", RenderManager.class);
+        renderManagerField = new FieldWrapper<RenderManager>(Enhancements.isObfuscated ? "renderManager" : "renderManager", RenderGlobal.class);
     }
 }

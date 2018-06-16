@@ -12,14 +12,14 @@ public class ChatUtil
     public static void addMessage(final String s, final boolean showtag) {
         final IChatComponent c = (IChatComponent)new CCT(s, new EnumChatFormatting[0]).gold();
         if (canSend()) {
-            ChatUtil.mc.field_71439_g.func_145747_a(showtag ? getTag().func_150257_a(c) : c);
+            ChatUtil.mc.thePlayer.addChatMessage(showtag ? getTag().appendSibling(c) : c);
         }
     }
     
     public static void errorMessage(final String str) {
         final IChatComponent msg = (IChatComponent)new CCT(str, new EnumChatFormatting[0]).red();
         if (canSend()) {
-            ChatUtil.mc.field_71439_g.func_145747_a(msg);
+            ChatUtil.mc.thePlayer.addChatMessage(msg);
         }
     }
     
@@ -29,7 +29,7 @@ public class ChatUtil
     
     public static void sendCommandServer(final String cmd) {
         if (canSend()) {
-            ChatUtil.mc.field_71439_g.func_71165_d(((cmd.charAt(0) == '/') ? "" : "/") + cmd);
+            ChatUtil.mc.thePlayer.sendChatMessage(((cmd.charAt(0) == '/') ? "" : "/") + cmd);
         }
     }
     
@@ -42,7 +42,7 @@ public class ChatUtil
     }
     
     public static IChatComponent getTag() {
-        return ChatUtil.tag.func_150259_f();
+        return ChatUtil.tag.createCopy();
     }
     
     public static void setTag(final IChatComponent c) {
@@ -51,7 +51,7 @@ public class ChatUtil
     
     public static void addMessage(final IChatComponent c, final boolean showtag) {
         if (canSend()) {
-            ChatUtil.mc.field_71439_g.func_145747_a(showtag ? getTag().func_150257_a(c) : c);
+            ChatUtil.mc.thePlayer.addChatMessage(showtag ? getTag().appendSibling(c) : c);
         }
     }
     
@@ -64,7 +64,7 @@ public class ChatUtil
             @Override
             public void run() {
                 if (canSend()) {
-                    ChatUtil.mc.field_71439_g.func_145747_a((IChatComponent)(showtag ? ChatUtil.getTag().func_150257_a((IChatComponent)c) : c));
+                    ChatUtil.mc.thePlayer.addChatMessage((IChatComponent)(showtag ? ChatUtil.getTag().appendSibling((IChatComponent)c) : c));
                 }
             }
         }, ms);
@@ -72,7 +72,7 @@ public class ChatUtil
     
     public static void sendMessage(final String s) {
         if (canSend()) {
-            ChatUtil.mc.field_71439_g.func_71165_d(s);
+            ChatUtil.mc.thePlayer.sendChatMessage(s);
         }
     }
     
@@ -86,11 +86,11 @@ public class ChatUtil
     }
     
     private static boolean canSend() {
-        return Minecraft.func_71410_x() != null && Minecraft.func_71410_x().field_71439_g != null;
+        return Minecraft.getMinecraft() != null && Minecraft.getMinecraft().thePlayer != null;
     }
     
     static {
         ChatUtil.tag = (IChatComponent)new CCT("[E]: ", new EnumChatFormatting[0]).red();
-        ChatUtil.mc = Minecraft.func_71410_x();
+        ChatUtil.mc = Minecraft.getMinecraft();
     }
 }

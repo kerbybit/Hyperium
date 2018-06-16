@@ -22,6 +22,6 @@ public class PlayerDetails
     }
     
     static {
-        PlayerDetails.name = Minecraft.func_71410_x().func_110432_I().func_111285_a();
+        PlayerDetails.name = Minecraft.getMinecraft().getSession().getUsername();
     }
 }

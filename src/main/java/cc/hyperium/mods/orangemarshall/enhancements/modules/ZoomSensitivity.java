@@ -17,8 +17,8 @@ public class ZoomSensitivity
     
     @SubscribeEvent
     public void onZoom(final InputEvent.KeyInputEvent event) {
-        if (this.config.disableOptifineZoomSmooth && this.config.keybindZoom != null && this.config.keybindZoom.func_151470_d()) {
-            Minecraft.func_71410_x().field_71474_y.field_74326_T = false;
+        if (this.config.disableOptifineZoomSmooth && this.config.keybindZoom != null && this.config.keybindZoom.isKeyDown()) {
+            Minecraft.getMinecraft().gameSettings.smoothCamera = false;
         }
     }
 }

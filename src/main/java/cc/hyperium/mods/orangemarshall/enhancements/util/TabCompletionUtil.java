@@ -23,7 +23,7 @@ public class TabCompletionUtil
             }
             if (list.isEmpty()) {
                 for (final Object object : p_175762_1_) {
-                    if (object instanceof ResourceLocation && doesStringStartWith(s, ((ResourceLocation)object).func_110623_a())) {
+                    if (object instanceof ResourceLocation && doesStringStartWith(s, ((ResourceLocation)object).getResourcePath())) {
                         list.add(String.valueOf(object));
                     }
                 }
@@ -41,15 +41,15 @@ public class TabCompletionUtil
     }
     
     public static List<String> getTabUsernames() {
-        final EntityPlayerSP player = Minecraft.func_71410_x().field_71439_g;
+        final EntityPlayerSP player = Minecraft.getMinecraft().thePlayer;
         final List<String> playerNames = (List<String>)Lists.newArrayList();
         if (player == null) {
             return playerNames;
         }
-        return player.field_71174_a.func_175106_d().stream().map(netPlayerInfo -> netPlayerInfo.func_178845_a().getName()).collect((Collector<? super Object, ?, List<String>>)Collectors.toList());
+        return player.sendQueue.getPlayerInfoMap().stream().map(netPlayerInfo -> netPlayerInfo.getGameProfile().getName()).collect((Collector<? super Object, ?, List<String>>)Collectors.toList());
     }
     
     public static List<EntityPlayer> getLoadedPlayers() {
-        return (List<EntityPlayer>)Minecraft.func_71410_x().field_71441_e.field_73010_i;
+        return (List<EntityPlayer>)Minecraft.getMinecraft().theWorld.playerEntities;
     }
 }

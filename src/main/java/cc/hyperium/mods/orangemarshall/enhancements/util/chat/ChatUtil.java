@@ -99,8 +99,8 @@ public class ChatUtil
     
     public static CCT getLine() {
         final StringBuilder line = new StringBuilder(EnumChatFormatting.STRIKETHROUGH.toString() + EnumChatFormatting.BOLD + " ");
-        final int maxWidth = ChatUtil.mc.field_71456_v.func_146158_b().func_146228_f();
-        while (ChatUtil.mc.field_71466_p.func_78256_a(line.toString()) < maxWidth) {
+        final int maxWidth = ChatUtil.mc.ingameGUI.getChatGUI().getChatWidth();
+        while (ChatUtil.mc.fontRendererObj.getStringWidth(line.toString()) < maxWidth) {
             line.append(" ");
         }
         return CCT.newComponent(line.substring(0, line.length() - 1)).gold();
@@ -112,8 +112,8 @@ public class ChatUtil
     
     public static void printCentered(final String text) {
         final StringBuilder indentation = new StringBuilder(EnumChatFormatting.BOLD.toString());
-        final int halfWidth = ChatUtil.mc.field_71456_v.func_146158_b().func_146228_f() / 2;
-        while (ChatUtil.mc.field_71466_p.func_78256_a(text) / 2 + ChatUtil.mc.field_71466_p.func_78256_a(indentation.toString()) < halfWidth) {
+        final int halfWidth = ChatUtil.mc.ingameGUI.getChatGUI().getChatWidth() / 2;
+        while (ChatUtil.mc.fontRendererObj.getStringWidth(text) / 2 + ChatUtil.mc.fontRendererObj.getStringWidth(indentation.toString()) < halfWidth) {
             indentation.append(" ");
         }
         CCT.newComponent(indentation.toString() + text).print();
@@ -182,12 +182,12 @@ public class ChatUtil
     
     public static void addMessageCallingChatEvent(IChatComponent component) {
         if ((component = ForgeEventFactory.onClientChat((byte)0, component)) != null && canSendMessage()) {
-            ChatUtil.mc.field_71439_g.func_146105_b(component);
+            ChatUtil.mc.thePlayer.addChatComponentMessage(component);
         }
     }
     
     public static boolean canSendMessage() {
-        return ChatUtil.mc.field_71439_g != null;
+        return ChatUtil.mc.thePlayer != null;
     }
     
     private static void addMessage(final String message, final boolean showtag) {
@@ -198,10 +198,10 @@ public class ChatUtil
     private static void addMessage(final IChatComponent component, final boolean showtag) {
         if (canSendMessage()) {
             if (showtag) {
-                ChatUtil.mc.field_71439_g.func_145747_a((IChatComponent)getTag().appendSiblingKeepStyle(component));
+                ChatUtil.mc.thePlayer.addChatMessage((IChatComponent)getTag().appendSiblingKeepStyle(component));
             }
             else {
-                ChatUtil.mc.field_71439_g.func_145747_a(component);
+                ChatUtil.mc.thePlayer.addChatMessage(component);
             }
         }
     }
@@ -224,7 +224,7 @@ public class ChatUtil
     
     public static void sendServerCommand(final String cmd) {
         if (canSendMessage()) {
-            ChatUtil.mc.field_71439_g.func_71165_d(((cmd.charAt(0) == '/') ? "" : "/") + cmd);
+            ChatUtil.mc.thePlayer.sendChatMessage(((cmd.charAt(0) == '/') ? "" : "/") + cmd);
         }
     }
     
@@ -235,7 +235,7 @@ public class ChatUtil
     
     public static void sendMessage(final String message) {
         if (canSendMessage()) {
-            ChatUtil.mc.field_71439_g.func_71165_d(message);
+            ChatUtil.mc.thePlayer.sendChatMessage(message);
         }
     }
     
@@ -254,6 +254,6 @@ public class ChatUtil
     
     static {
         REGEX_CHAT_MESSAGE = Pattern.compile("(\\[[0-9a-zA-Z \\[\\+]+\\] {0,1})*[0-9a-zA-Z_]+: .*");
-        mc = Minecraft.func_71410_x();
+        mc = Minecraft.getMinecraft();
     }
 }

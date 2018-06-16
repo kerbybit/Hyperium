@@ -68,11 +68,13 @@ public class WingsRenderer extends ModelBase {
             GlStateManager.translate(0.0, 0.125 / scale, 0.0);
         }
         GlStateManager.color(1.0F, 1.0F, 1.0F);
-
+        boolean angel = location.toString().contains("angel");
+        if (angel)
+            GlStateManager.translate(0.0F, -.1F, 0.0);
         this.mc.getTextureManager().bindTexture(location);
-
+        GlStateManager.disableCull();
         for (int j = 0; j < 2; ++j) {
-            GL11.glEnable(2884);
+
             final float f11 = System.currentTimeMillis() % 1000L / 1000.0f * 3.1415927f * 2.0f;
             this.wing.rotateAngleX = (float) Math.toRadians(-80.0) - (float) Math.cos(f11) * 0.2f;
             this.wing.rotateAngleY = (float) Math.toRadians(20.0) + (float) Math.sin(f11) * 0.4f;
@@ -81,11 +83,13 @@ public class WingsRenderer extends ModelBase {
             this.wing.render(0.0625f);
             GlStateManager.scale(-1.0f, 1.0f, 1.0f);
             if (j == 0) {
-                GL11.glCullFace(1028);
+                GlStateManager.disableCull();
             }
+
         }
         GL11.glCullFace(1029);
         GL11.glDisable(2884);
+
         GL11.glPopMatrix();
     }
 

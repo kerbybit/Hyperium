@@ -19,34 +19,34 @@ public class CommandListPlayers implements ICommand
         this.aliases.add("listplayer");
     }
     
-    public String func_71517_b() {
+    public String getCommandName() {
         return "listplayers";
     }
     
-    public String func_71518_a(final ICommandSender sender) {
+    public String getCommandUsage(final ICommandSender sender) {
         return "listplayers";
     }
     
-    public List func_71514_a() {
+    public List getCommandAliases() {
         return this.aliases;
     }
     
-    public void func_71515_b(final ICommandSender sender, final String[] args) throws CommandException {
+    public void processCommand(final ICommandSender sender, final String[] args) throws CommandException {
         String playerNamesString = EnumChatFormatting.GRAY.toString();
-        final List<String> playerNames = (List<String>)Minecraft.func_71410_x().field_71441_e.field_73010_i.stream().map(EntityPlayer::func_70005_c_).collect(Collectors.toList());
+        final List<String> playerNames = (List<String>)Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).collect(Collectors.toList());
         playerNamesString += StringUtil.join(playerNames, ", ");
         ChatUtil.addMessageWithoutTag(EnumChatFormatting.GOLD + "[" + EnumChatFormatting.GREEN + playerNames.size() + EnumChatFormatting.GOLD + "] " + playerNamesString);
     }
     
-    public boolean func_71519_b(final ICommandSender sender) {
+    public boolean canCommandSenderUseCommand(final ICommandSender sender) {
         return true;
     }
     
-    public List func_180525_a(final ICommandSender sender, final String[] args, final BlockPos pos) {
+    public List addTabCompletionOptions(final ICommandSender sender, final String[] args, final BlockPos pos) {
         return null;
     }
     
-    public boolean func_82358_a(final String[] args, final int index) {
+    public boolean isUsernameIndex(final String[] args, final int index) {
         return false;
     }
     

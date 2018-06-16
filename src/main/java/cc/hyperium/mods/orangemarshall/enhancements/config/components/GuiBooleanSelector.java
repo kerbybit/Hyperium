@@ -37,11 +37,11 @@ public class GuiBooleanSelector extends GuiValueSelector
     }
     
     public void drawCheckbox() {
-        func_73734_a(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1, this.yPosition + this.height + 1, -6250336);
-        func_73734_a(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, -16777216);
+        drawRect(this.xPosition - 1, this.yPosition - 1, this.xPosition + this.width + 1, this.yPosition + this.height + 1, -6250336);
+        drawRect(this.xPosition, this.yPosition, this.xPosition + this.width, this.yPosition + this.height, -16777216);
         final int padding = 1;
         if (this.value) {
-            Gui.func_73734_a(this.xPosition + padding, this.yPosition + padding, this.xPosition + this.width - padding, this.yPosition + this.height - padding, -3092272);
+            Gui.drawRect(this.xPosition + padding, this.yPosition + padding, this.xPosition + this.width - padding, this.yPosition + this.height - padding, -3092272);
         }
     }
     

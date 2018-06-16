@@ -62,27 +62,27 @@ public class F4Screen
     }
     
     private String getMovementSpeed() {
-        if (this.mc.field_71439_g == null) {
+        if (this.mc.thePlayer == null) {
             return "";
         }
-        final Vec3 oldPos = new Vec3(this.mc.field_71439_g.field_70165_t, this.mc.field_71439_g.field_70163_u, this.mc.field_71439_g.field_70161_v);
-        final Vec3 newPos = new Vec3(this.mc.field_71439_g.field_70142_S, this.mc.field_71439_g.field_70137_T, this.mc.field_71439_g.field_70136_U);
-        final double perTick = newPos.func_72438_d(oldPos);
+        final Vec3 oldPos = new Vec3(this.mc.thePlayer.posX, this.mc.thePlayer.posY, this.mc.thePlayer.posZ);
+        final Vec3 newPos = new Vec3(this.mc.thePlayer.lastTickPosX, this.mc.thePlayer.lastTickPosY, this.mc.thePlayer.lastTickPosZ);
+        final double perTick = newPos.distanceTo(oldPos);
         return String.format("%.1f", perTick * 20.0);
     }
     
     private String getMovementSpeedIgnoreY() {
-        if (this.mc.field_71439_g == null) {
+        if (this.mc.thePlayer == null) {
             return "";
         }
-        final Vec3 oldPos = new Vec3(this.mc.field_71439_g.field_70165_t, 0.0, this.mc.field_71439_g.field_70161_v);
-        final Vec3 newPos = new Vec3(this.mc.field_71439_g.field_70142_S, 0.0, this.mc.field_71439_g.field_70136_U);
-        final double perTick = newPos.func_72438_d(oldPos);
+        final Vec3 oldPos = new Vec3(this.mc.thePlayer.posX, 0.0, this.mc.thePlayer.posZ);
+        final Vec3 newPos = new Vec3(this.mc.thePlayer.lastTickPosX, 0.0, this.mc.thePlayer.lastTickPosZ);
+        final double perTick = newPos.distanceTo(oldPos);
         return String.format("%.1f", perTick * 20.0);
     }
     
     private String getPing() {
-        return "" + NetworkInfo.getInstance().getPing(Minecraft.func_71410_x().func_110432_I().func_111285_a());
+        return "" + NetworkInfo.getInstance().getPing(Minecraft.getMinecraft().getSession().getUsername());
     }
     
     private String getArmorValue() {
@@ -90,16 +90,16 @@ public class F4Screen
     }
     
     private String getHorseJumpPower() {
-        return this.getHorseStatOrEmpty(horse -> (int)(100.0 * horse.func_110215_cj()) + "");
+        return this.getHorseStatOrEmpty(horse -> (int)(100.0 * horse.getHorseJumpStrength()) + "");
     }
     
     private String getHorseSpeed() {
-        return this.getHorseStatOrEmpty(horse -> (int)(100.0 * horse.func_110148_a(SharedMonsterAttributes.field_111263_d).func_111126_e()) + "");
+        return this.getHorseStatOrEmpty(horse -> (int)(100.0 * horse.getEntityAttribute(SharedMonsterAttributes.movementSpeed).getAttributeValue()) + "");
     }
     
     private String getHorseStatOrEmpty(final Function<EntityHorse, String> func) {
-        if (this.mc.field_71439_g.field_70154_o instanceof EntityHorse) {
-            return func.apply((EntityHorse)this.mc.field_71439_g.field_70154_o);
+        if (this.mc.thePlayer.ridingEntity instanceof EntityHorse) {
+            return func.apply((EntityHorse)this.mc.thePlayer.ridingEntity);
         }
         return "";
     }
@@ -120,10 +120,10 @@ public class F4Screen
     }
     
     private void updateState() {
-        this.entity = this.mc.func_175606_aa();
-        this.blockpos = new BlockPos(this.mc.func_175606_aa().field_70165_t, this.mc.func_175606_aa().func_174813_aQ().field_72338_b, this.mc.func_175606_aa().field_70161_v);
-        this.enumfacing = this.entity.func_174811_aO();
-        this.debugString = this.mc.field_71426_K.split(" ");
+        this.entity = this.mc.getRenderViewEntity();
+        this.blockpos = new BlockPos(this.mc.getRenderViewEntity().posX, this.mc.getRenderViewEntity().getEntityBoundingBox().minY, this.mc.getRenderViewEntity().posZ);
+        this.enumfacing = this.entity.getHorizontalFacing();
+        this.debugString = this.mc.debug.split(" ");
     }
     
     private static long bytesToMb(final long bytes) {
@@ -136,11 +136,11 @@ public class F4Screen
     }
     
     private String getPlayerCoords() {
-        return String.format("%.2f / %.2f / %.2f", this.mc.func_175606_aa().field_70165_t, this.mc.func_175606_aa().func_174813_aQ().field_72338_b, this.mc.func_175606_aa().field_70161_v);
+        return String.format("%.2f / %.2f / %.2f", this.mc.getRenderViewEntity().posX, this.mc.getRenderViewEntity().getEntityBoundingBox().minY, this.mc.getRenderViewEntity().posZ);
     }
     
     private String getBlockCoords() {
-        return String.format("Block: %d %d %d " + this.roundDecimals(MathHelper.func_76142_g(this.entity.field_70125_A), 3), this.blockpos.func_177958_n(), this.blockpos.func_177956_o(), this.blockpos.func_177952_p());
+        return String.format("Block: %d %d %d " + this.roundDecimals(MathHelper.wrapAngleTo180_float(this.entity.rotationPitch), 3), this.blockpos.getX(), this.blockpos.getY(), this.blockpos.getZ());
     }
     
     private double roundDecimals(double num, final int a) {
@@ -173,20 +173,20 @@ public class F4Screen
     }
     
     private String getWorldTime() {
-        return "" + this.mc.field_71441_e.func_72820_D() / 24000L;
+        return "" + this.mc.theWorld.getWorldTime() / 24000L;
     }
     
     private String getBiome() {
-        if (this.mc.field_71441_e != null && this.mc.field_71441_e.func_175667_e(this.blockpos)) {
-            final Chunk chunk = this.mc.field_71441_e.func_175726_f(this.blockpos);
-            return chunk.func_177411_a(this.blockpos, this.mc.field_71441_e.func_72959_q()).field_76791_y;
+        if (this.mc.theWorld != null && this.mc.theWorld.isBlockLoaded(this.blockpos)) {
+            final Chunk chunk = this.mc.theWorld.getChunkFromBlockCoords(this.blockpos);
+            return chunk.getBiome(this.blockpos, this.mc.theWorld.getWorldChunkManager()).biomeName;
         }
         return "";
     }
     
     private String getShader() {
-        if (this.mc.field_71460_t != null && this.mc.field_71460_t.func_147702_a()) {
-            return this.mc.field_71460_t.func_147706_e().func_148022_b();
+        if (this.mc.entityRenderer != null && this.mc.entityRenderer.isShaderActive()) {
+            return this.mc.entityRenderer.getShaderGroup().getShaderGroupName();
         }
         return "";
     }
@@ -202,7 +202,7 @@ public class F4Screen
     }
     
     private String getJavaVersion() {
-        return "Java " + System.getProperty("java.version") + "_" + (this.mc.func_147111_S() ? 64 : 32);
+        return "Java " + System.getProperty("java.version") + "_" + (this.mc.isJava64bit() ? 64 : 32);
     }
     
     private String getScreenResolution() {
@@ -234,25 +234,25 @@ public class F4Screen
     }
     
     private String getLookingAtCoords() {
-        if (this.mc.field_71476_x != null && this.mc.field_71476_x.field_72313_a == MovingObjectPosition.MovingObjectType.BLOCK && this.mc.field_71476_x.func_178782_a() != null) {
-            final BlockPos blockpos = this.mc.field_71476_x.func_178782_a();
-            IBlockState iblockstate = this.mc.field_71441_e.func_180495_p(blockpos);
-            if (this.mc.field_71441_e.func_175624_G() != WorldType.field_180272_g) {
-                iblockstate = iblockstate.func_177230_c().func_176221_a(iblockstate, (IBlockAccess)this.mc.field_71441_e, blockpos);
+        if (this.mc.objectMouseOver != null && this.mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && this.mc.objectMouseOver.getBlockPos() != null) {
+            final BlockPos blockpos = this.mc.objectMouseOver.getBlockPos();
+            IBlockState iblockstate = this.mc.theWorld.getBlockState(blockpos);
+            if (this.mc.theWorld.getWorldType() != WorldType.DEBUG_WORLD) {
+                iblockstate = iblockstate.getBlock().getActualState(iblockstate, (IBlockAccess)this.mc.theWorld, blockpos);
             }
-            return String.format("%d %d %d", blockpos.func_177958_n(), blockpos.func_177956_o(), blockpos.func_177952_p());
+            return String.format("%d %d %d", blockpos.getX(), blockpos.getY(), blockpos.getZ());
         }
         return "";
     }
     
     private String getLookingAtBlockType() {
-        if (this.mc.field_71476_x != null && this.mc.field_71476_x.field_72313_a == MovingObjectPosition.MovingObjectType.BLOCK && this.mc.field_71476_x.func_178782_a() != null) {
-            final BlockPos blockpos = this.mc.field_71476_x.func_178782_a();
-            IBlockState iblockstate = this.mc.field_71441_e.func_180495_p(blockpos);
-            if (this.mc.field_71441_e.func_175624_G() != WorldType.field_180272_g) {
-                iblockstate = iblockstate.func_177230_c().func_176221_a(iblockstate, (IBlockAccess)this.mc.field_71441_e, blockpos);
+        if (this.mc.objectMouseOver != null && this.mc.objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && this.mc.objectMouseOver.getBlockPos() != null) {
+            final BlockPos blockpos = this.mc.objectMouseOver.getBlockPos();
+            IBlockState iblockstate = this.mc.theWorld.getBlockState(blockpos);
+            if (this.mc.theWorld.getWorldType() != WorldType.DEBUG_WORLD) {
+                iblockstate = iblockstate.getBlock().getActualState(iblockstate, (IBlockAccess)this.mc.theWorld, blockpos);
             }
-            return String.valueOf(Block.field_149771_c.func_177774_c((Object)iblockstate.func_177230_c()));
+            return String.valueOf(Block.blockRegistry.getNameForObject((Object)iblockstate.getBlock()));
         }
         return "";
     }
