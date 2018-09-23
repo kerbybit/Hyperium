@@ -43,6 +43,7 @@ public class RestartUtil {
 
 
                 }
+                else
                 cmd.append(quoteSpaces(s)).append(" ");
 
             }
