@@ -176,6 +176,7 @@ import cc.hyperium.gui.main.HyperiumMainGui;
 import cc.hyperium.handlers.handlers.SettingsMigrator;
 import cc.hyperium.mixinsimp.renderer.gui.IMixinGuiMultiplayer;
 import cc.hyperium.utils.HyperiumFontRenderer;
+import cc.hyperium.utils.JsonHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -203,6 +204,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.demo.DemoWorldServer;
 import net.minecraft.world.storage.ISaveFormat;
 import net.minecraft.world.storage.WorldInfo;
+import org.apache.commons.io.FileUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
@@ -220,6 +222,7 @@ import java.util.HashMap;
 public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
 
 
+    private static final ResourceLocation[] titlePanoramaPaths = new ResourceLocation[]{new ResourceLocation("textures/gui/title/background/panorama_0.png"), new ResourceLocation("textures/gui/title/background/panorama_1.png"), new ResourceLocation("textures/gui/title/background/panorama_2.png"), new ResourceLocation("textures/gui/title/background/panorama_3.png"), new ResourceLocation("textures/gui/title/background/panorama_4.png"), new ResourceLocation("textures/gui/title/background/panorama_5.png")};
     public static boolean FIRST_START = true;
     private static ResourceLocation background = new ResourceLocation("textures/material/backgrounds/1.png");
     private static boolean customBackground = false;
@@ -245,7 +248,8 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
     private BufferedImage bgBr = null;
     private ResourceLocation bgDynamicTexture = null;
     private int panoramaTimer;
-    private static final ResourceLocation[] titlePanoramaPaths = new ResourceLocation[]{new ResourceLocation("textures/gui/title/background/panorama_0.png"), new ResourceLocation("textures/gui/title/background/panorama_1.png"), new ResourceLocation("textures/gui/title/background/panorama_2.png"), new ResourceLocation("textures/gui/title/background/panorama_3.png"), new ResourceLocation("textures/gui/title/background/panorama_4.png"), new ResourceLocation("textures/gui/title/background/panorama_5.png")};
+    private boolean accountSwitcherDropDown = false;
+    private JsonHolder launcherProfiles;
 
     public HyperiumMainMenu() {
         if (Minecraft.getMinecraft().isFullScreen() && Settings.WINDOWED_FULLSCREEN && FIRST_START) {
@@ -318,6 +322,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
             this.field_183503_M.func_183500_a(this.width, this.height);
             this.field_183503_M.initGui();
         }
+        buttonList.add(new GuiButton(6969, 1, 1, "Account Switcher"));
     }
 
     /**
@@ -337,6 +342,18 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
         }
     }
 
+    private JsonHolder getLauncherProfiles() {
+        if (launcherProfiles == null) {
+            try {
+                launcherProfiles = new JsonHolder(
+                        FileUtils.readFileToString(new File(Minecraft.getMinecraft().mcDataDir, "launcher_profiles.json"), "UTF-8"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return launcherProfiles;
+    }
+
     /**
      * Override drawScreen method
      *
@@ -353,14 +370,22 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
                 drawHyperiumStyleScreen(mouseX, mouseY, partialTicks);
                 break;
         }
-
+        if (accountSwitcherDropDown) {
+            JsonHolder launcherProfiles = getLauncherProfiles();
+            JsonHolder holder = launcherProfiles.optJSONObject("authenticationDatabase");
+            for (String s : holder.getKeys()) {
+                JsonHolder profile = holder.optJSONObject(s);
+            }
+        }
         super.drawScreen(mouseX, mouseY, partialTicks);
 
     }
 
     @Override
     public void actionPerformed(GuiButton button) {
-
+        if (button.id == 6969) {
+            accountSwitcherDropDown = !accountSwitcherDropDown;
+        }
         if (button.id == 0) {
             this.mc.displayGuiScreen(new GuiOptions(this, this.mc.gameSettings));
         }
@@ -458,7 +483,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
 
 
     private void drawHyperiumStyleScreen(int mouseX, int mouseY, float partialTicks) {
-        if(Settings.BACKGROUND.equals("DEFAULT")) {
+        if (Settings.BACKGROUND.equals("DEFAULT")) {
             GlStateManager.disableAlpha();
             this.renderSkybox(mouseX, mouseY, partialTicks);
             GlStateManager.enableAlpha();
@@ -573,7 +598,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
     }
 
     private void drawDefaultStyleScreen(int mouseX, int mouseY, float partialTicks) {
-        if(Settings.BACKGROUND.equals("DEFAULT")) {
+        if (Settings.BACKGROUND.equals("DEFAULT")) {
             GlStateManager.disableAlpha();
             this.renderSkybox(mouseX, mouseY, partialTicks);
             GlStateManager.enableAlpha();
@@ -624,16 +649,15 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
         GlStateManager.disableAlpha();
         int i = 3;
 
-        for (int j = 0; j < i; ++j)
-        {
-            float f = 1.0F / (float)(j + 1);
+        for (int j = 0; j < i; ++j) {
+            float f = 1.0F / (float) (j + 1);
             int k = this.width;
             int l = this.height;
-            float f1 = (float)(j - i / 2) / 256.0F;
-            worldrenderer.pos((double)k, (double)l, (double)this.zLevel).tex((double)(0.0F + f1), 1.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
-            worldrenderer.pos((double)k, 0.0D, (double)this.zLevel).tex((double)(1.0F + f1), 1.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
-            worldrenderer.pos(0.0D, 0.0D, (double)this.zLevel).tex((double)(1.0F + f1), 0.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
-            worldrenderer.pos(0.0D, (double)l, (double)this.zLevel).tex((double)(0.0F + f1), 0.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
+            float f1 = (float) (j - i / 2) / 256.0F;
+            worldrenderer.pos((double) k, (double) l, (double) this.zLevel).tex((double) (0.0F + f1), 1.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
+            worldrenderer.pos((double) k, 0.0D, (double) this.zLevel).tex((double) (1.0F + f1), 1.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
+            worldrenderer.pos(0.0D, 0.0D, (double) this.zLevel).tex((double) (1.0F + f1), 0.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
+            worldrenderer.pos(0.0D, (double) l, (double) this.zLevel).tex((double) (0.0F + f1), 0.0D).color(1.0F, 1.0F, 1.0F, f).endVertex();
         }
 
         tessellator.draw();
@@ -644,8 +668,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
     /**
      * Renders the skybox in the main menu
      */
-    private void renderSkybox(int p_73971_1_, int p_73971_2_, float p_73971_3_)
-    {
+    private void renderSkybox(int p_73971_1_, int p_73971_2_, float p_73971_3_) {
         this.mc.getFramebuffer().unbindFramebuffer();
         GlStateManager.viewport(0, 0, 256, 256);
         this.drawPanorama(p_73971_1_, p_73971_2_, p_73971_3_);
@@ -658,24 +681,23 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
         this.rotateAndBlurSkybox(p_73971_3_);
         this.mc.getFramebuffer().bindFramebuffer(true);
         GlStateManager.viewport(0, 0, this.mc.displayWidth, this.mc.displayHeight);
-        float f = this.width > this.height ? 120.0F / (float)this.width : 120.0F / (float)this.height;
-        float f1 = (float)this.height * f / 256.0F;
-        float f2 = (float)this.width * f / 256.0F;
+        float f = this.width > this.height ? 120.0F / (float) this.width : 120.0F / (float) this.height;
+        float f1 = (float) this.height * f / 256.0F;
+        float f2 = (float) this.width * f / 256.0F;
         int i = this.width;
         int j = this.height;
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldrenderer = tessellator.getWorldRenderer();
         worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX_COLOR);
-        worldrenderer.pos(0.0D, (double)j, (double)this.zLevel).tex((double)(0.5F - f1), (double)(0.5F + f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-        worldrenderer.pos((double)i, (double)j, (double)this.zLevel).tex((double)(0.5F - f1), (double)(0.5F - f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-        worldrenderer.pos((double)i, 0.0D, (double)this.zLevel).tex((double)(0.5F + f1), (double)(0.5F - f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
-        worldrenderer.pos(0.0D, 0.0D, (double)this.zLevel).tex((double)(0.5F + f1), (double)(0.5F + f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+        worldrenderer.pos(0.0D, (double) j, (double) this.zLevel).tex((double) (0.5F - f1), (double) (0.5F + f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+        worldrenderer.pos((double) i, (double) j, (double) this.zLevel).tex((double) (0.5F - f1), (double) (0.5F - f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+        worldrenderer.pos((double) i, 0.0D, (double) this.zLevel).tex((double) (0.5F + f1), (double) (0.5F - f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
+        worldrenderer.pos(0.0D, 0.0D, (double) this.zLevel).tex((double) (0.5F + f1), (double) (0.5F + f2)).color(1.0F, 1.0F, 1.0F, 1.0F).endVertex();
         tessellator.draw();
     }
 
 
-    private void drawPanorama(int p_73970_1_, int p_73970_2_, float p_73970_3_)
-    {
+    private void drawPanorama(int p_73970_1_, int p_73970_2_, float p_73970_3_) {
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldrenderer = tessellator.getWorldRenderer();
         GlStateManager.matrixMode(5889);
@@ -695,42 +717,35 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         int i = 8;
 
-        for (int j = 0; j < i * i; ++j)
-        {
+        for (int j = 0; j < i * i; ++j) {
             GlStateManager.pushMatrix();
-            float f = ((float)(j % i) / (float)i - 0.5F) / 64.0F;
-            float f1 = ((float)(j / i) / (float)i - 0.5F) / 64.0F;
+            float f = ((float) (j % i) / (float) i - 0.5F) / 64.0F;
+            float f1 = ((float) (j / i) / (float) i - 0.5F) / 64.0F;
             float f2 = 0.0F;
             GlStateManager.translate(f, f1, f2);
-            GlStateManager.rotate(MathHelper.sin(((float)this.panoramaTimer + p_73970_3_) / 400.0F) * 25.0F + 20.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotate(-((float)this.panoramaTimer + p_73970_3_) * 0.1F, 0.0F, 1.0F, 0.0F);
+            GlStateManager.rotate(MathHelper.sin(((float) this.panoramaTimer + p_73970_3_) / 400.0F) * 25.0F + 20.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotate(-((float) this.panoramaTimer + p_73970_3_) * 0.1F, 0.0F, 1.0F, 0.0F);
 
-            for (int k = 0; k < 6; ++k)
-            {
+            for (int k = 0; k < 6; ++k) {
                 GlStateManager.pushMatrix();
 
-                if (k == 1)
-                {
+                if (k == 1) {
                     GlStateManager.rotate(90.0F, 0.0F, 1.0F, 0.0F);
                 }
 
-                if (k == 2)
-                {
+                if (k == 2) {
                     GlStateManager.rotate(180.0F, 0.0F, 1.0F, 0.0F);
                 }
 
-                if (k == 3)
-                {
+                if (k == 3) {
                     GlStateManager.rotate(-90.0F, 0.0F, 1.0F, 0.0F);
                 }
 
-                if (k == 4)
-                {
+                if (k == 4) {
                     GlStateManager.rotate(90.0F, 1.0F, 0.0F, 0.0F);
                 }
 
-                if (k == 5)
-                {
+                if (k == 5) {
                     GlStateManager.rotate(-90.0F, 1.0F, 0.0F, 0.0F);
                 }
 
