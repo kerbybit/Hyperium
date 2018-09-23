@@ -174,9 +174,11 @@ import cc.hyperium.Metadata;
 import cc.hyperium.config.Settings;
 import cc.hyperium.gui.main.HyperiumMainGui;
 import cc.hyperium.handlers.handlers.SettingsMigrator;
+import cc.hyperium.handlers.handlers.restart.RestartUtil;
 import cc.hyperium.mixinsimp.renderer.gui.IMixinGuiMultiplayer;
 import cc.hyperium.utils.HyperiumFontRenderer;
 import cc.hyperium.utils.JsonHolder;
+import cc.hyperium.utils.Multithreading;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -206,6 +208,7 @@ import net.minecraft.world.storage.ISaveFormat;
 import net.minecraft.world.storage.WorldInfo;
 import org.apache.commons.io.FileUtils;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.Project;
 
@@ -217,7 +220,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
 
@@ -323,6 +328,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
             this.field_183503_M.initGui();
         }
         buttonList.add(new GuiButton(6969, 1, 1, "Account Switcher"));
+        buttonList.add(new GuiButton(6970, width - 50, 1, 50, 20, "Restart"));
     }
 
     /**
@@ -349,6 +355,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
                         FileUtils.readFileToString(new File(Minecraft.getMinecraft().mcDataDir, "launcher_profiles.json"), "UTF-8"));
             } catch (IOException e) {
                 e.printStackTrace();
+                launcherProfiles = new JsonHolder();
             }
         }
         return launcherProfiles;
@@ -373,18 +380,72 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
         if (accountSwitcherDropDown) {
             JsonHolder launcherProfiles = getLauncherProfiles();
             JsonHolder holder = launcherProfiles.optJSONObject("authenticationDatabase");
+            int printY = 22;
+            List<String> displays = new ArrayList<>();
             for (String s : holder.getKeys()) {
                 JsonHolder profile = holder.optJSONObject(s);
+                JsonHolder profiles = profile.optJSONObject("profiles");
+                for (String key : profiles.getKeys()) {
+                    String displayName = profiles.optJSONObject(key).optString("displayName");
+                    displays.add(displayName);
+                }
+                printY += 10;
+            }
+            int i = 0;
+            for (String display : displays) {
+                boolean hovered = mouseX > 0 && mouseX < 202 && mouseY >= printY && mouseY <= printY + 19;
+                if (hovered && Mouse.isButtonDown(0)) {
+                    restartWithAccount(i);
+                }
+                drawRect(1 + (hovered ? 7 : 0), printY, 201 - (hovered ? 7 : 0), printY + 19, new Color(0, 0, 0, hovered ? 120 : 70).getRGB());
+                drawCenteredString(fontRendererObj, display, 100, printY + 6, Color.WHITE.getRGB());
+                printY += 20;
+                i++;
             }
         }
         super.drawScreen(mouseX, mouseY, partialTicks);
 
     }
 
+    private void restartWithAccount(int index) {
+        JsonHolder launcherProfiles = getLauncherProfiles();
+        JsonHolder holder = launcherProfiles.optJSONObject("authenticationDatabase");
+        List<String> keys = holder.getKeys();
+        if (index < keys.size()) {
+            JsonHolder jsonHolder = holder.optJSONObject(keys.get(0));
+            JsonHolder profiles = jsonHolder.optJSONObject("profiles");
+            List<String> keys1 = profiles.getKeys();
+            if (keys1.size() > 0) {
+                RestartUtil.useDifferentCreds = true;
+                RestartUtil.accessToken = jsonHolder.optString("accessToken");
+                RestartUtil.uuid = keys1.get(0);
+                RestartUtil.username = profiles.optJSONObject(keys1.get(0)).optString("displayName");
+                System.out.println("Restarting with token " + RestartUtil.accessToken + ", username " + RestartUtil.username + ", uuid " + RestartUtil.uuid);
+                String launchCommand = RestartUtil.getLaunchCommand(true);
+                restart(launchCommand);
+            }
+
+        }
+    }
+
+    public void restart(String cmds) {
+        Multithreading.runAsync(() -> {
+            try {
+                Runtime.getRuntime().exec(cmds);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+//        Minecraft.getMinecraft().shutdown();
+    }
+
     @Override
     public void actionPerformed(GuiButton button) {
         if (button.id == 6969) {
             accountSwitcherDropDown = !accountSwitcherDropDown;
+        }
+        if (button.id == 6970) {
+            restart(RestartUtil.getLaunchCommand(true));
         }
         if (button.id == 0) {
             this.mc.displayGuiScreen(new GuiOptions(this, this.mc.gameSettings));
