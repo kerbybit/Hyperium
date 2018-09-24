@@ -436,7 +436,7 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
                 e.printStackTrace();
             }
         });
-//        Minecraft.getMinecraft().shutdown();
+        Minecraft.getMinecraft().shutdown();
     }
 
     @Override
