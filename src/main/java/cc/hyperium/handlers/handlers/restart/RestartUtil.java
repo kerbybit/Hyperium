@@ -40,8 +40,6 @@ public class RestartUtil {
                     else if (s.startsWith("--accessToken")) {
                         cmd.append(quoteSpaces("--accessToken " + accessToken));
                     } else cmd.append(quoteSpaces(s)).append(" ");
-
-
                 }
                 else
                 cmd.append(quoteSpaces(s)).append(" ");

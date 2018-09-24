@@ -429,6 +429,8 @@ public class HyperiumMainMenu extends GuiScreen implements GuiYesNoCallback {
     }
 
     public void restart(String cmds) {
+
+        System.out.println("RESTARATING WITH " + cmds);
         Multithreading.runAsync(() -> {
             try {
                 Runtime.getRuntime().exec(cmds);
