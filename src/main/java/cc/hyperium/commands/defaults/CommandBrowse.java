@@ -20,8 +20,8 @@ package cc.hyperium.commands.defaults;
 
 import cc.hyperium.Hyperium;
 import cc.hyperium.commands.BaseCommand;
-import cc.hyperium.handlers.handlers.browser.BrowserHandler;
 import cc.hyperium.handlers.handlers.chat.GeneralChatHandler;
+import org.cef.OS;
 
 public class CommandBrowse implements BaseCommand {
 
@@ -37,10 +37,10 @@ public class CommandBrowse implements BaseCommand {
 
     @Override
     public void onExecute(String[] args) {
-        if (Hyperium.INSTANCE.isDevEnv())
+        if (!OS.isMacintosh())
             if (args.length == 1) {
-                String arg = args[0];
-                BrowserHandler.INSTNACE.setPage(arg);
+                Hyperium.INSTANCE.getModIntegration().getBrowserMod().browserGui.loadURL(args[0]);
+                Hyperium.INSTANCE.getModIntegration().getBrowserMod().showBrowser();
             } else {
                 GeneralChatHandler.instance().sendMessage(getUsage());
             }
