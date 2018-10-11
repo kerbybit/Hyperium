@@ -172,12 +172,13 @@ import cc.hyperium.Hyperium;
 import cc.hyperium.config.Settings;
 import cc.hyperium.mods.sk1ercommon.Multithreading;
 import com.mojang.realmsclient.gui.ChatFormatting;
-import java.awt.Color;
-import java.lang.reflect.Field;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiYesNo;
 import net.minecraft.client.resources.I18n;
+
+import java.awt.Color;
+import java.lang.reflect.Field;
 
 public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
 
@@ -190,7 +191,7 @@ public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
         super.initGui();
 
         this.buttonList.add(new GuiButton(BUTTON_ID_ACCEPT, (width / 2) - 100, 160,
-            firstAccept ? ChatFormatting.GREEN + "Confirm Accept" : "Accept"));
+                firstAccept ? ChatFormatting.GREEN + I18n.format("button.disclaimer.confirm") : I18n.format("button.disclaimer.accept")));
 
     }
 
@@ -205,18 +206,18 @@ public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
 //        drawCenteredString(this.fontRendererObj, "Disclaimer",width / 2,63,0xFFFFFF);
 
         drawCenteredString(this.fontRendererObj, I18n.format("disclaimer.line1",
-            ChatFormatting.BOLD + I18n.format("disclaimer.line1.bold") + ChatFormatting.RESET),
-            width / 2, 90, Color.WHITE.getRGB());
+                ChatFormatting.BOLD + I18n.format("disclaimer.line1.bold") + ChatFormatting.RESET),
+                width / 2, 90, Color.WHITE.getRGB());
         drawCenteredString(this.fontRendererObj, I18n.format("disclaimer.line2"), width / 2, 100,
-            Color.WHITE.getRGB());
+                Color.WHITE.getRGB());
         drawCenteredString(this.fontRendererObj, I18n.format("disclaimer.line3"), width / 2, 110,
-            Color.WHITE.getRGB());
+                Color.WHITE.getRGB());
         drawCenteredString(this.fontRendererObj, I18n.format("disclaimer.line4",
-            ChatFormatting.GRAY + I18n.format("disclaimer.line4.policylink")
-                + ChatFormatting.RESET), width / 2, 120, Color.WHITE.getRGB());
+                ChatFormatting.GRAY + I18n.format("disclaimer.line4.policylink")
+                        + ChatFormatting.RESET), width / 2, 120, Color.WHITE.getRGB());
 
         drawCenteredString(this.fontRendererObj, I18n.format("disclaimer.line5"), width / 2, 130,
-            Color.WHITE.getRGB());
+                Color.WHITE.getRGB());
 
     }
 
@@ -235,18 +236,18 @@ public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
                     GuiYesNo optimisedFontRendererGui = new GuiYesNo((result, id) -> {
                         Settings.OPTIMIZED_FONT_RENDERER = result;
                         Minecraft.getMinecraft().displayGuiScreen(new GuiHyperiumScreenMainMenu());
-                    }, "If you can read this text please press yes.", "Otherwise just wait.", 0);
+                    }, I18n.format("gui.optimizer.font.line1"), I18n.format("gui.optimizer.font.line2"), 0);
                     Runnable optimisedFrRunnable = () -> {
                         try {
                             Settings.OPTIMIZED_FONT_RENDERER = true;
                             Hyperium.INSTANCE.getHandlers().getGuiDisplayHandler()
-                                .setDisplayNextTick(optimisedFontRendererGui);
+                                    .setDisplayNextTick(optimisedFontRendererGui);
                             Thread.sleep(7000);
-                            if (Minecraft.getMinecraft().currentScreen instanceof GuiYesNo)
+                            if (!(Minecraft.getMinecraft().currentScreen instanceof GuiYesNo))
                                 return;
                             Settings.OPTIMIZED_FONT_RENDERER = false;
                             Hyperium.INSTANCE.getHandlers().getGuiDisplayHandler()
-                                .setDisplayNextTick(new GuiHyperiumScreenMainMenu());
+                                    .setDisplayNextTick(new GuiHyperiumScreenMainMenu());
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -255,26 +256,26 @@ public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
                         if (result) {
                             try {
                                 Class<?> gameSettings = Minecraft
-                                    .getMinecraft().gameSettings
-                                    .getClass();
+                                        .getMinecraft().gameSettings
+                                        .getClass();
 
                                 String[] trueFields = new String[]{"ofFastMath",
-                                    "ofFastRender",
-                                    "ofSmoothFps",
-                                    "ofSmoothWorld"};
+                                        "ofFastRender",
+                                        "ofSmoothFps",
+                                        "ofSmoothWorld"};
                                 for (String field : trueFields) {
                                     Field f = gameSettings.getDeclaredField(field);
                                     f.setAccessible(true);
                                     f.setBoolean(Minecraft.getMinecraft().gameSettings,
-                                        true);
+                                            true);
                                 }
 
-                                String[] falseFields = new String[] { "ofAnimatedRedstone", "ofAnimatedExplosion", "ofAnimatedFlame", "ofAnimatedSmoke", "ofVoidParticles", "ofWaterParticles", "ofRainSplash", "ofPortalParticles", "ofPotionParticles", "ofFireworkParticles", "ofDrippingWaterLava" };
+                                String[] falseFields = new String[]{"ofAnimatedRedstone", "ofAnimatedExplosion", "ofAnimatedFlame", "ofAnimatedSmoke", "ofVoidParticles", "ofWaterParticles", "ofRainSplash", "ofPortalParticles", "ofPotionParticles", "ofFireworkParticles", "ofDrippingWaterLava"};
                                 for (String field : falseFields) {
                                     Field f = gameSettings.getDeclaredField(field);
                                     f.setAccessible(true);
                                     f.setBoolean(Minecraft.getMinecraft().gameSettings,
-                                        false);
+                                            false);
                                 }
 
                                 Field particleSettingField = gameSettings.getDeclaredField("aM");
@@ -285,8 +286,8 @@ public class GuiHyperiumScreenTos extends GuiHyperiumScreen {
                             }
                         }
                         Multithreading.runAsync(optimisedFrRunnable);
-                    }, "We detected you are using OptiFine.",
-                        "Would you like us to optimise it?", 0);
+                    }, I18n.format("gui.optimizer.optifine.line1"),
+                            I18n.format("gui.optimizer.optifine.line2"), 0);
 
                     if (Hyperium.INSTANCE.isOptifineInstalled()) {
                         System.out.println("Found Optifine on first launch, optimising settings.");
