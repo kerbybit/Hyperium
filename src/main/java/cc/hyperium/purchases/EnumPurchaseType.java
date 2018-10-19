@@ -29,6 +29,12 @@ public enum EnumPurchaseType {
     BUTT("Butt"),
     DEADMAU5_COSMETIC("Ears"),
     DRAGON_HEAD("Dragon Head"),
+    DRAGON_COMPANION("Dragon Companion"),
+    BACKPACK_ENDER_DRAGON("Ender Dragon Backpack"),
+    HAT_TOPHAT("Tophat"),
+    HAT_FEZ("Fez Hat"),
+    HAT_LEGO("Lego Hat"),
+    HAMSTER_COMPANION("Hamster Companion"),
     UNKNOWN("Unknown");
 
     private String displayName;
@@ -41,6 +47,11 @@ public enum EnumPurchaseType {
         try {
             return valueOf(asString.toUpperCase());
         } catch (Exception e) {
+            for (EnumPurchaseType enumPurchaseType : values()) {
+                if (enumPurchaseType.displayName.equalsIgnoreCase(asString)) {
+                    return enumPurchaseType;
+                }
+            }
             return UNKNOWN;
         }
     }

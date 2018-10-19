@@ -5,16 +5,8 @@ import cc.hyperium.event.EventBus;
 import cc.hyperium.event.InvokeEvent;
 import cc.hyperium.event.RenderTickEvent;
 import cc.hyperium.mods.browser.HyperiumProgressListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import cc.hyperium.mods.browser.gui.GuiBrowser;
+import cc.hyperium.mods.browser.gui.GuiConfig;
 import net.minecraft.client.Minecraft;
 import net.montoyo.mcef.BaseProxy;
 import net.montoyo.mcef.MCEF;
@@ -35,6 +27,17 @@ import org.cef.browser.CefBrowserOsr;
 import org.cef.browser.CefMessageRouter;
 import org.cef.browser.CefMessageRouter.CefMessageRouterConfig;
 import org.cef.browser.CefRenderer;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ClientProxy extends BaseProxy {
 
@@ -137,7 +140,8 @@ public class ClientProxy extends BaseProxy {
             System.arraycopy(paths, 0, tmp, 0, paths.length);
             tmp[paths.length] = newRoot;
             field.set(null, tmp);
-            System.setProperty("java.library.path", System.getProperty("java.library.path") + File.pathSeparator + newRoot);
+            System.setProperty("java.library.path",
+                System.getProperty("java.library.path") + File.pathSeparator + newRoot);
 
             Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
             fieldSysPath.setAccessible(true);
@@ -158,7 +162,6 @@ public class ClientProxy extends BaseProxy {
             Log.info("Applying linux patch...");
             LinuxPatch.doPatch(resourceArray);
         }
-
         if (OS.isMacintosh()) {
             System.out.println("Modding macOS files");
             new File(rootDir, "jcef.app").setExecutable(true);
@@ -168,7 +171,11 @@ public class ClientProxy extends BaseProxy {
         CefSettings settings = new CefSettings();
         settings.windowless_rendering_enabled = true;
         settings.background_color = settings.new ColorType(0, 255, 255, 255);
-        settings.locales_dir_path = (new File(ROOT, "MCEFLocales")).getAbsolutePath();
+        settings.locales_dir_path = OS.isWindows() ? new File(ROOT, "locales").getAbsolutePath()
+            : new File(ROOT,
+                "jcef.app" + File.separator + "Contents" + File.separator + "Frameworks"
+                    + File.separator + "Chromium Embedded Framework.framework" + File.separator
+                    + "Resources").getAbsolutePath();
         settings.cache_path = (new File(ROOT, "MCEFCache")).getAbsolutePath();
         settings.browser_subprocess_path =
             OS.isWindows() ? new File(rootDir, "jcef_helper.exe").getAbsolutePath()
@@ -184,10 +191,12 @@ public class ClientProxy extends BaseProxy {
                 libs.add(new File(rootDir, "libcef.dll"));
                 libs.add(new File(rootDir, "jcef.dll"));
             } else if (OS.isMacintosh()) {
-                libs.add(new File(rootDir, "jcef.app" + File.separator + "Contents" + File.separator + "Frameworks" + File.separator + "Chromium Embedded Framework.framework" + File.separator + "Chromium Embedded Framework"));
+                libs.add(new File(rootDir,
+                    "jcef.app" + File.separator + "Contents" + File.separator + "Frameworks"
+                        + File.separator + "Chromium Embedded Framework.framework" + File.separator
+                        + "Chromium Embedded Framework"));
                 libs.add(new File(rootDir, "jcef.dylib"));
             }
-
 
             for (File lib : libs) {
                 System.out.println(lib.getAbsolutePath());
@@ -203,7 +212,7 @@ public class ClientProxy extends BaseProxy {
             loadMimeTypeMapping();
             CefApp.addAppHandler(appHandler);
             cefClient = cefApp.createClient();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.error("Going in virtual mode; couldn't initialize CEF.");
             e.printStackTrace();
 
@@ -292,13 +301,19 @@ public class ClientProxy extends BaseProxy {
     public void onTick(RenderTickEvent ev) {
         mc.mcProfiler.startSection("MCEF");
 
+        if (Hyperium.INSTANCE.getModIntegration().getBrowserMod().hudBrowser == null && !(Minecraft
+            .getMinecraft().currentScreen instanceof GuiConfig) && !(Minecraft
+            .getMinecraft().currentScreen instanceof GuiBrowser)) {
+            mc.mcProfiler.endSection();
+            return;
+        }
+
         for (CefBrowserOsr b : browsers) {
             b.mcefUpdate();
         }
 
         displayHandler.update();
         mc.mcProfiler.endSection();
-
     }
 
 
@@ -325,7 +340,12 @@ public class ClientProxy extends BaseProxy {
         }
 
         browsers.clear();
-        cefClient.dispose();
+
+        try {
+            cefClient.dispose();
+        } catch (NullPointerException ex) {
+            // Sad
+        }
 
         if (MCEF.CHECK_VRAM_LEAK) {
             CefRenderer.dumpVRAMLeak();

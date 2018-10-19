@@ -2,7 +2,6 @@ package cc.hyperium.mods.browser.gui;
 
 import cc.hyperium.Hyperium;
 import cc.hyperium.mods.browser.util.BrowserUtil;
-import java.awt.event.KeyEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
@@ -13,13 +12,17 @@ import net.montoyo.mcef.MCEF;
 import net.montoyo.mcef.api.API;
 import net.montoyo.mcef.api.IBrowser;
 import net.montoyo.mcef.api.MCEFApi;
+import org.apache.commons.lang3.tuple.Triple;
 import org.cef.OS;
+import org.cef.browser.CefBrowserOsr;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.awt.Color;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Map;
 
 /**
  * @author Koding
@@ -36,7 +39,6 @@ public class GuiBrowser extends GuiScreen {
     private GuiTextField url = null;
     private String urlToLoad, title;
 
-
     public GuiBrowser(String url) {
         urlToLoad = (url == null) ? MCEF.HOME_PAGE : url;
     }
@@ -44,6 +46,8 @@ public class GuiBrowser extends GuiScreen {
     @Override
     public void initGui() {
         Hyperium.INSTANCE.getModIntegration().getBrowserMod().hudBrowser = null;
+        this.url = new GuiTextField(5, fontRendererObj, 40, 10, width - 100, 20);
+        this.url.setMaxStringLength(65535);
 
         if (browser == null) {
             //Grab the API and make sure it isn't null.
@@ -62,6 +66,8 @@ public class GuiBrowser extends GuiScreen {
             browser.resize(mc.displayWidth, mc.displayHeight - scaleY(30));
         }
 
+        ((CefBrowserOsr) browser).setZoomLevel(1.0);
+
         //Create GUI
         Keyboard.enableRepeatEvents(true);
         buttonList.clear();
@@ -74,15 +80,28 @@ public class GuiBrowser extends GuiScreen {
             buttonList.add(pip = (new GuiButton(4, width - 40, 10, 20, 20, "PIP")));
             pip.enabled = true;
 
-            url = new GuiTextField(5, fontRendererObj, 40, 10, width - 100, 20);
-            url.setMaxStringLength(65535);
-        } else {
-            buttonList.add(back);
-            buttonList.add(fwd);
-            buttonList.add(go);
-            buttonList.add(close);
-            buttonList.add(pip);
 
+        } else {
+            if(back == null){
+                back = (new GuiButton(0, 0, 10, 20, 20, "<"));
+            }
+            buttonList.add(back);
+            if(fwd == null){
+                fwd = (new GuiButton(1, 20, 10, 20, 20, ">"));
+            }
+            buttonList.add(fwd);
+            if(go == null){
+                go = (new GuiButton(2, width - 60, 10, 20, 20, "Go"));
+            }
+            buttonList.add(go);
+            if(close == null){
+                close = (new GuiButton(3, width - 20, 10, 20, 20, "X"));
+            }
+            buttonList.add(close);
+            if(pip == null){
+                pip = (new GuiButton(4, width - 40, 10, 20, 20, "PIP"));
+            }
+            buttonList.add(pip);
             //Handle resizing
             pip.xPosition = width - 40;
             go.xPosition = width - 60;
@@ -105,9 +124,9 @@ public class GuiBrowser extends GuiScreen {
     }
 
     public void loadURL(String url) {
-        if (url != null)
-
+        if (url != null) {
             this.url.setText(url);
+        }
         if (browser == null) {
             urlToLoad = url;
         } else {
@@ -132,8 +151,11 @@ public class GuiBrowser extends GuiScreen {
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+
         //Render the URL box first because it overflows a bit
-        url.drawTextBox();
+        if(url != null) {
+            url.drawTextBox();
+        }
 
         //Render buttons
         super.drawScreen(mouseX, mouseY, partialTicks);
@@ -141,8 +163,8 @@ public class GuiBrowser extends GuiScreen {
         Gui.drawRect(0, 0, width, 10, new Color(0, 0, 0, 100).getRGB());
         if (title != null) {
             fontRendererObj
-                    .drawString(title, 5, (10f - fontRendererObj.FONT_HEIGHT) / 2, Color.WHITE.getRGB(),
-                            true);
+                .drawString(title, 5, (10f - fontRendererObj.FONT_HEIGHT) / 2, Color.WHITE.getRGB(),
+                    true);
         }
 
         //Renders the browser if itsn't null
@@ -173,6 +195,7 @@ public class GuiBrowser extends GuiScreen {
 
     @Override
     public void handleInput() {
+        Map<Integer, Triple<KeyEvent, KeyEvent, String>> map = Hyperium.INSTANCE.getModIntegration().getBrowserMod().keyPressesMap;
         while (Keyboard.next()) {
 
             boolean pressed = Keyboard.getEventKeyState();
@@ -186,7 +209,7 @@ public class GuiBrowser extends GuiScreen {
                 return;
             }
             if (browser != null
-                    && !focused) { //Inject events into browser. TODO: Handle keyboard mods.
+                && !focused) { //Inject events into browser. TODO: Handle keyboard mods.
                 if (key != '.' && key != ';' && key != ',') { //Workaround
                     if (pressed) {
                         browser.injectKeyPressed(key, BrowserUtil.getModifierInt());
@@ -195,11 +218,17 @@ public class GuiBrowser extends GuiScreen {
                     }
                 }
 
-                if (num == Keyboard.KEY_BACK && pressed) {
-                    browser.injectKeyPressed((char) KeyEvent.VK_LEFT, 1);
-                    browser.injectKeyReleased((char) KeyEvent.VK_LEFT, 1);
-                    browser.injectKeyPressed((char) KeyEvent.VK_DELETE, 0);
-                    browser.injectKeyReleased((char) KeyEvent.VK_DELETE, 0);
+                if (map.containsKey(KeyEvent.getExtendedKeyCodeForChar(key))) {
+                    Triple<KeyEvent, KeyEvent, String> entry = map.get(KeyEvent.getExtendedKeyCodeForChar(key));
+                    if (pressed) {
+                        KeyEvent keyEvent = new KeyEvent(
+                            ((CefBrowserOsr) browser).getUIComponent(), KeyEvent.KEY_TYPED, 0, 0, 0,
+                            (char) 0);
+                        ((CefBrowserOsr) browser).injectKeyEvent(entry.getLeft());
+                        ((CefBrowserOsr) browser).injectKeyEvent(keyEvent);
+                    } else {
+                        ((CefBrowserOsr) browser).injectKeyEvent(entry.getMiddle());
+                    }
                 }
 
                 if (key != Keyboard.CHAR_NONE) {
@@ -230,7 +259,8 @@ public class GuiBrowser extends GuiScreen {
                 } else if (btn == -1) {
                     browser.injectMouseMove(sx, y, BrowserUtil.getModifierInt(), y < 0);
                 } else {
-                    browser.injectMouseButton(sx, y, BrowserUtil.getModifierInt(), btn + 1, pressed, 1);
+                    browser.injectMouseButton(sx, y, BrowserUtil.getModifierInt(), btn + 1, pressed,
+                        1);
                 }
             }
 

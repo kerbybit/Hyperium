@@ -45,6 +45,77 @@ public class SettingsHandler {
                     client.write(ServerCrossDataPacket.build(new JsonHolder().put("internal", true).put("ears", yes)));
                 }
             });
+            String[] hats1 = new String[]{"Tophat", "Fez", "Lego"};
+            EnumPurchaseType[] hat2 = new EnumPurchaseType[]{EnumPurchaseType.HAT_TOPHAT, EnumPurchaseType.HAT_FEZ, EnumPurchaseType.HAT_LEGO};
+
+            Field hats = Settings.class.getField("HAT_TYPE");
+            customStates.put(hats, () -> {
+                HyperiumPurchase self = PurchaseApi.getInstance().getSelf();
+                if (self != null) {
+                    List<String> pur = new ArrayList<>();
+                    for (int i = 0; i < hat2.length; i++) {
+                        if (self.hasPurchased(hat2[i])) {
+                            pur.add(hats1[i]);
+                        }
+                    }
+                    if (pur.size() > 0) {
+                        pur.add("NONE");
+                        String[] tmp = new String[pur.size()];
+                        for (int i = 0; i < pur.size(); i++) {
+                            tmp[i] = pur.get(i);
+                        }
+                        return tmp;
+                    }
+                }
+                return new String[]{"NOT PURCHASED"};
+            });
+            registerCallback(hats, o -> {
+                NettyClient client = NettyClient.getClient();
+                if (client == null) {
+                    return;
+                }
+                EnumPurchaseType parse = null;
+                for (int i = 0; i < hats1.length; i++) {
+                    if (hats1[i].equalsIgnoreCase(o.toString())) {
+                        parse=hat2[i];
+                    }
+                }
+                boolean none = o.toString().equalsIgnoreCase("NONE");
+                if(parse == null && !none) {
+                    GeneralChatHandler.instance().sendMessage("Unable to locate hat type: " + o);
+                    return;
+                }
+                JsonHolder put = new JsonHolder().put("internal", true).put("set_hat", true).put("value", none ? "NONE" : parse.toString());
+                ServerCrossDataPacket build = ServerCrossDataPacket.build(put);
+                client.write(build);
+            });
+            Field companion_type = Settings.class.getField("COMPANION_TYPE");
+            customStates.put(companion_type, () -> {
+                HyperiumPurchase self = PurchaseApi.getInstance().getSelf();
+                List<EnumPurchaseType> types = new ArrayList<>();
+                types.add(EnumPurchaseType.DRAGON_COMPANION);
+                types.add(EnumPurchaseType.HAMSTER_COMPANION);
+                types.removeIf(enumPurchaseType -> !self.hasPurchased(enumPurchaseType));
+                List<String> vals = new ArrayList<>();
+                vals.add("NONE");
+                for (EnumPurchaseType type : types) {
+                    vals.add(type.getDisplayName());
+                }
+                String[] tmp = new String[vals.size()];
+                for (int i = 0; i < vals.size(); i++) {
+                    tmp[i] = vals.get(i);
+                }
+                return tmp;
+            });
+            registerCallback(companion_type, o -> {
+                NettyClient client = NettyClient.getClient();
+                if (client == null) {
+                    return;
+                }
+                JsonHolder put = new JsonHolder().put("internal", true).put("companion", true).put("type", o.toString().equalsIgnoreCase("NONE") ? "NONE" : EnumPurchaseType.parse(o.toString()).toString());
+                ServerCrossDataPacket build = ServerCrossDataPacket.build(put);
+                client.write(build);
+            });
             customStates.put(earsField, () -> {
                 Hyperium instance = Hyperium.INSTANCE;
                 HyperiumCosmetics cosmetics1 = instance.getCosmetics();
@@ -67,8 +138,10 @@ public class SettingsHandler {
                     };
                 }
 
+
                 return new String[]{"NOT PURCHASED"};
             });
+
             registerCallback(Settings.class.getField("SHOW_BUTT"), o -> {
                 boolean yes = !((String) o).equalsIgnoreCase("YES");
                 HyperiumPurchase self = PurchaseApi.getInstance().getSelf();

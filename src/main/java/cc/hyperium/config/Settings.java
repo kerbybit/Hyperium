@@ -128,6 +128,11 @@ public class Settings {
     @ToggleSetting(name = "gui.settings.staticfov", category = IMPROVEMENTS)
     public static boolean STATIC_FOV = false;
 
+
+    @ConfigOpt
+    public static int SETTINGS_ALPHA = 100;
+
+
     @ConfigOpt(alt = "cc.hyperium.gui.settings.items.GeneralSetting;uploadScreenshotsByDefault")
     @ToggleSetting(name = "gui.settings.uploadscreenshots")
     public static boolean DEFAULT_UPLOAD_SS = false;
@@ -140,14 +145,18 @@ public class Settings {
     @ToggleSetting(name = "gui.settings.blurredguibackground")
     public static boolean BLUR_GUI = false;
 
-    @ConfigOpt(alt = "cc.hyperium.gui.settings.items.GeneralSetting;chromaHudNonHypixelEnabled")
-    @ToggleSetting(name = "gui.settings.chromahudonallservers")
-    public static boolean CHROMAHUD_ALL = true;
+    @ConfigOpt
+    @SelectorSetting(name = "Hat Type", category = COSMETICS, items = "NONE")
+    public static String HAT_TYPE = "NONE";
 
-    // enables in non-hypixel
-    @ConfigOpt(alt = "cc.hyperium.gui.settings.items.GeneralSetting;screenshotOnKillEnabled")
-    @ToggleSetting(name = "gui.settings.screenshotonkill")
-    public static boolean SCREENSHOT_KILL = false;
+
+    @ConfigOpt
+    @SelectorSetting(name = "Companion Type", category = COSMETICS, items = "NONE")
+    public static String COMPANION_TYPE = "NONE";
+
+
+
+
 
     @ConfigOpt(alt = "cc.hyperium.gui.settings.items.GeneralSetting;spotifyControlsEnabled")
     @ToggleSetting(name = "gui.settings.showspotifycontrols", category = SPOTIFY, mods = true)
@@ -178,8 +187,6 @@ public class Settings {
     @ConfigOpt(alt = "cc.hyperium.gui.settings.items.CosmeticSettings;flossDanceToggle")
     public static boolean FLOSS_TOGGLE = false;
 
-    @ConfigOpt(alt = "cc.hyperium.gui.settings.items.CosmeticSettings;flip_type")
-    public static int FLIP_TYPE = 1;
 
     @ConfigOpt(alt = "cc.hyperium.gui.settings.items.AnimationSettings;oldBlockhit")
     @ToggleSetting(name = "gui.settings.17blockhitting", category = ANIMATIONS, mods = true)
@@ -275,7 +282,8 @@ public class Settings {
     public static int MAX_PARTICLES = 200;
 
     @ConfigOpt
-    @SelectorSetting(name = "gui.settings.maxparticles", category = COSMETICS, items = {"200"}) // Items configured in override
+    @SelectorSetting(name = "gui.settings.maxparticles", category = COSMETICS, items = {"200"})
+    // Items configured in override
     public static String MAX_PARTICLE_STRING = "200";
 
     @ConfigOpt
@@ -409,6 +417,10 @@ public class Settings {
     @ToggleSetting(name = "gui.settings.showparticlein1stperson", category = COSMETICS)
     public static boolean SHOW_PART_1ST_PERSON = false;
 
+
+    @ConfigOpt
+    @ToggleSetting(name = "Show Companion in 1st person", category = COSMETICS)
+    public static boolean SHOW_COMPANION_IN_1ST_PERSON = true;
     @ConfigOpt
     @ToggleSetting(name = "gui.settings.showhitdistances", category = REACH, mods = true)
     public static boolean SHOW_HIT_DISTANCES = false;
@@ -450,7 +462,7 @@ public class Settings {
             "0",
             "1",
             "2"
-    })
+    }, mods = true)
     public static String FNCOMPASS_DETAILS = "2";
 
     @ToggleSetting(name = "gui.settings.showuserdotsonnametags", category = INTEGRATIONS)
@@ -519,9 +531,7 @@ public class Settings {
 //    @ToggleSetting(name = "Gui Font", category = GENERAL)
     public static String GUI_FONT = "Roboto Condensed";
 
-    @ConfigOpt
-    @ToggleSetting(name = "gui.settings.showbrowser", category = IMPROVEMENTS)
-    public static boolean SHOW_BROWSER = false;
+
     @ConfigOpt
     public static long TOTAL_PLAYTIME = 0;
     @ConfigOpt

@@ -2,57 +2,80 @@ package cc.hyperium.mixinsimp.renderer;
 
 import cc.hyperium.event.InvokeEvent;
 import cc.hyperium.event.TickEvent;
+import cc.hyperium.mods.sk1ercommon.Multithreading;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.CacheWriter;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import net.minecraft.client.renderer.GLAllocation;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.SharedDrawable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FontFixValues {
-    public static FontFixValues INSTANCE = new FontFixValues();
-    private final int max = 1000;
-    public Map<StringHash, CachedString> stringCache = new HashMap<>();
+    public static FontFixValues INSTANCE;
+
+    private final int MAX = 1000 /* Worth bumping up to 10_000? */;
+
+    private Cache<StringHash, CachedString> stringCache = Caffeine.newBuilder()
+            .writer(new RemovalListener())
+            .executor(Multithreading.POOL)
+            .maximumSize(MAX)
+            .recordStats()
+            .build();
     public List<StringHash> obfuscated = new ArrayList<>();
-    public Map<String, Integer> widthCache = new HashMap<>();
-    public boolean opt = true;
-    private long time;
-    private int e;
-    private long count = 0;
-
-    private FontFixValues() {
-
-    }
 
     @InvokeEvent
     public void tick(TickEvent tickEvent) {
-
-        opt = true;
-        e++;
-        for (StringHash hash : obfuscated) {
-            CachedString cachedString = stringCache.get(hash);
-            stringCache.remove(hash);
-            if (cachedString != null)
-                GLAllocation.deleteDisplayLists(cachedString.getListId());
-        }
+        stringCache.invalidateAll(obfuscated);
         obfuscated.clear();
-        if (e >= 20) {
-            e = 0;
-            count = 0;
-            time = 0;
-            if (stringCache.size() > max) {
-                for (CachedString cachedString : stringCache.values()) {
-                    GLAllocation.deleteDisplayLists(cachedString.getListId());
-                }
-                stringCache.clear();
+    }
+
+    public @Nullable CachedString get(StringHash key) {
+        return stringCache.getIfPresent(key);
+    }
+
+    public void cache(StringHash key, CachedString value) {
+        stringCache.put(key, value);
+    }
+
+    private class RemovalListener implements CacheWriter<StringHash, CachedString> {
+        private SharedDrawable drawable;
+
+        public RemovalListener() {
+            try {
+                drawable = new SharedDrawable(Display.getDrawable());
+            } catch (LWJGLException e) {
+                e.printStackTrace();
             }
         }
 
+        @Override
+        public void write(@Nonnull StringHash key, @Nonnull CachedString value) { }
 
-    }
+        @Override
+        public void delete(@Nonnull StringHash key, @Nullable CachedString value, @Nonnull RemovalCause cause) {
+            if (value == null) return;
 
-    public void incTime(long l) {
-        time += l;
-        count++;
+            if (drawable == null) {
+                System.out.println("big issue font");
+                return;
+            }
+
+            synchronized (drawable) {
+                try {
+                    drawable.makeCurrent();
+                    GLAllocation.deleteDisplayLists(value.getListId());
+                    drawable.releaseContext();
+                } catch (LWJGLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

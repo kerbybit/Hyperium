@@ -5,7 +5,11 @@ import cc.hyperium.mixins.renderer.IMixinRenderItem;
 import cc.hyperium.mixins.renderer.IMixinRenderItem2;
 import cc.hyperium.mixinsimp.client.GlStateModifier;
 import cc.hyperium.mods.glintcolorizer.Colors;
-import cc.hyperium.mods.itemphysic.physics.ClientPhysic;
+import cc.hyperium.mods.sk1ercommon.Multithreading;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.CacheWriter;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.RemovalCause;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,17 +26,25 @@ import net.minecraft.item.ItemSkull;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.SharedDrawable;
 
-import java.util.HashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class HyperiumRenderItem {
     private static final ResourceLocation RES_ITEM_GLINT = new ResourceLocation("textures/misc/enchanted_item_glint.png");
 
     private RenderItem parent;
-    private HashMap<CachedItem, Integer> cache = new HashMap<>();
-    private ConcurrentLinkedQueue<CachedItem> queue = new ConcurrentLinkedQueue<>();
+    private final int MAX = 5000;
+
+    private Cache<ItemHash, Integer> itemCache = Caffeine.newBuilder()
+            .maximumSize(MAX)
+            .writer(new RemovalListener())
+            .executor(Multithreading.POOL)
+            .build();
 
     public HyperiumRenderItem(RenderItem parent) {
         this.parent = parent;
@@ -203,27 +215,18 @@ public class HyperiumRenderItem {
 
     public void renderModel(IBakedModel model, int color, ItemStack stack) {
         int i = 0;
-        CachedItem cachedItem = null;
+        ItemHash itemHash = null;
         if (Settings.OPTIMIZED_ITEM_RENDERER) {
-            if (cache.size() > 500) {
-                for (int c = 0; c < 50; c++) {
-                    CachedItem poll = queue.poll();
-                    Integer integer = cache.get(poll);
-                    if(integer !=null) {
-                        GL11.glDeleteLists(integer, 1);
-                        cache.remove(poll);
-                    }
-                }
-            }
+            itemHash = new ItemHash(model, color, stack != null ? stack.getUnlocalizedName() : "", stack != null ? stack.getItemDamage() : 0, stack != null ? stack.getMetadata() : 0, stack != null ? stack.getTagCompound() : null);
 
-            cachedItem = new CachedItem(model, color, stack != null ? stack.getUnlocalizedName() : "", stack != null ? stack.getItemDamage() : 0, stack != null ? stack.getMetadata() : 0, stack != null ? stack.getTagCompound() : null);
-            Integer integer = cache.get(cachedItem);
+            Integer integer = itemCache.getIfPresent(itemHash);
+
             if (integer != null) {
                 GlStateManager.callList(integer);
                 GlStateModifier.INSTANCE.resetColor();
                 return;
             }
-            queue.add(cachedItem);
+
             i = GLAllocation.generateDisplayLists(1);
             GL11.glNewList(i, GL11.GL_COMPILE_AND_EXECUTE);
         }
@@ -237,10 +240,48 @@ public class HyperiumRenderItem {
 
         ((IMixinRenderItem) parent).callRenderQuads(worldrenderer, model.getGeneralQuads(), color, stack);
         tessellator.draw();
+
         if (Settings.OPTIMIZED_ITEM_RENDERER) {
             GL11.glEndList();
-            cache.put(cachedItem, i);
+
+            if (itemHash != null) {
+                itemCache.put(itemHash, i);
+            }
         }
     }
 
+    private class RemovalListener implements CacheWriter<ItemHash, Integer> {
+        private SharedDrawable drawable;
+
+        public RemovalListener() {
+            try {
+                drawable = new SharedDrawable(Display.getDrawable());
+            } catch (LWJGLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void write(@Nonnull ItemHash key, @Nonnull Integer value) { }
+
+        @Override
+        public void delete(@Nonnull ItemHash key, @Nullable Integer value, @Nonnull RemovalCause cause) {
+            if (value == null) return;
+
+            if (drawable == null) {
+                System.out.println("big issue render item");
+                return;
+            }
+
+            synchronized (drawable) {
+                try {
+                    drawable.makeCurrent();
+                    GLAllocation.deleteDisplayLists(value);
+                    drawable.releaseContext();
+                } catch (LWJGLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
