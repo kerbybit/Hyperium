@@ -322,14 +322,20 @@ public class Settings {
     @ToggleSetting(category = GENERAL, name = "gui.settings.onlineindicator")
     public static boolean SHOW_ONLINE_PLAYERS = true;
 
-    @ConfigOpt(alt = "cc.hyperium.handlers.handlers.OtherConfigOptions;turnPeopleIntoBlock")
-    @ToggleSetting(category = COSMETICS, name = "gui.settings.showplayersasblocks")
-    public static boolean TURN_PEOPLE_INTO_BLOCKS = false;
+
 
     @ConfigOpt(alt = "cc.hyperium.handlers.handlers.OtherConfigOptions;pingOnDm")
     @ToggleSetting(category = HYPIXEL, name = "gui.settings.pingondm")
     public static boolean PING_ON_DM = true;
 
+
+    @ConfigOpt
+    @ToggleSetting(category = IMPROVEMENTS,name = "Improved Particle Handling (BETA)")
+    public static boolean IMPROVE_PARTICLES = true;
+
+
+
+    public static boolean IMPROVE_PARTICLE_RUN = false;
     @ConfigOpt()
     @ToggleSetting(category = GENERAL, name = "gui.settings.sprintbypassstaticfov")
     public static boolean staticFovSprintModifier;
